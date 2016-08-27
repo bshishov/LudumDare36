@@ -28,6 +28,13 @@ public class PlayerMoving : MonoBehaviour {
 	// Update is called once per frame
 	void Update ()
     {
+        var forceVector = new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical")).normalized;
+
+        var localTarget = transform.InverseTransformPoint(transform.localPosition + forceVector);
+        var angle = Mathf.Atan2(localTarget.x, localTarget.z) * Mathf.Rad2Deg;
+        var eulerAngleVelocity = new Vector3(0, angle, 0);
+        var deltaRotation = Quaternion.Euler(eulerAngleVelocity * Time.deltaTime * RotationSpeed);
+        _rigidBody.MoveRotation(_rigidBody.rotation * deltaRotation);
     }
 
     void FixedUpdate()
@@ -43,8 +50,7 @@ public class PlayerMoving : MonoBehaviour {
         forceVector *= ForceValue * Time.deltaTime;
         _rigidBody.AddForce(forceVector, ForceMode.Impulse);
         
-        var localTarget = transform.InverseTransformPoint(transform.position + forceVector);
-
+        var localTarget = transform.InverseTransformPoint(transform.localPosition + forceVector);
         var angle = Mathf.Atan2(localTarget.x, localTarget.z) * Mathf.Rad2Deg;
         var eulerAngleVelocity = new Vector3(0, angle, 0);
         var deltaRotation = Quaternion.Euler(eulerAngleVelocity * Time.deltaTime * RotationSpeed);
@@ -54,5 +60,13 @@ public class PlayerMoving : MonoBehaviour {
     private float GetSpeed()
     {
         return (_currentPoint - _previousPoint).magnitude;
+    }
+
+    void OnCollisionEnter(Collision col)
+    {
+    }
+
+    void OnCollisionExit(Collision col)
+    {
     }
 }
