@@ -47,20 +47,4 @@ public class PlayerMoving : MonoBehaviour {
     {
         return (_currentPoint - _previousPoint).magnitude;
     }
-
-    void OnCollisionEnter(Collision col)
-    {
-        if (col.gameObject.tag == "Slippery Surface")
-        {
-            Destroy(col.gameObject);
-        }
-    }
-
-    void OnCollisionExit(Collision col)
-    {
-        if (col.gameObject.name == "Slippery Surface")
-        {
-            Destroy(col.gameObject);
-        }
-    }
 }
