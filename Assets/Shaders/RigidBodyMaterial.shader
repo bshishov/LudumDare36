@@ -9,11 +9,14 @@
 	}
 	SubShader {
 		Tags { "RenderType"="Opaque" }
+		Lighting On
 		LOD 200
 		
 		CGPROGRAM
 #pragma surface surf Lambert//ToonRamp
 		sampler2D _Ramp;
+
+		/*
 
 		// custom lighting function that uses a texture ramp based
 		// on angle between light direction and normal
@@ -31,7 +34,7 @@
 			c.a = 0;
 			return c;
 		}
-
+		*/
 		
 
 #pragma target 3.0
@@ -51,8 +54,7 @@
 		float _RimPower;
 		float4 _Color;
 
-		void surf (Input IN, inout SurfaceOutput o) {
-			// Albedo comes from a texture tinted by color
+		void surf (Input IN, inout SurfaceOutput o) {			
 			fixed4 c = tex2D (_MainTex, IN.uv_MainTex) * _Color;
 			o.Albedo = c.rgb;
 			o.Normal = UnpackNormal(tex2D(_BumpMap, IN.uv_BumpMap));
@@ -63,5 +65,6 @@
 		}
 		ENDCG
 	}
-	FallBack "Diffuse"
+	//FallBack "Diffuse"
+	Fallback "VertexLit"
 }

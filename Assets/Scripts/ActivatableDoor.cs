@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 
-public class Door : MonoBehaviour
+[RequireComponent(typeof(ActivatorProxy))]
+public class ActivatableDoor : MonoBehaviour
 {
     public enum DoorState
     {
@@ -19,7 +20,6 @@ public class Door : MonoBehaviour
     public DoorState State { get; private set; }
 
     private float _currentState = 0f; // 0 = closed, 1 = opened
-    private bool _isActivatingByAnyButton = false;
     private Vector3 _closedPosition;
     private Vector3 _openedPosition;
     private float _waitingTimer;
@@ -70,14 +70,14 @@ public class Door : MonoBehaviour
     }
 
     // Called via SendMessage from Button
-    void OnButtonActivate()
+    void OnProxyActivate()
     {
         if(State != DoorState.Opened)
             SetState(DoorState.Opening);
     }
 
     // Called via SendMessage from Button
-    void OnButtonDeactivate()
+    void OnProxyDeactivate()
     {
         // if door is already closed
         if(State == DoorState.Closed)
@@ -96,7 +96,6 @@ public class Door : MonoBehaviour
 
     void SetState(DoorState state)
     {
-        Debug.LogFormat("New state for {0}: {1}", gameObject.name, state);
         State = state;
     }
 }

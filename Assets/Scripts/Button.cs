@@ -5,9 +5,6 @@ using UnityEngine.Events;
 [RequireComponent(typeof(Collider))]
 public class Button : MonoBehaviour
 {
-    public static string ActivateEvent = "OnButtonActivate";
-    public static string DeActivateEvent = "OnButtonDeactivate";
-
     public GameObject Target;
     public float PressDepth = 0.1f;
     public float PressingSpeed = 4f;
@@ -46,7 +43,6 @@ public class Button : MonoBehaviour
 
     void OnTriggerEnter(Collider col)
     {
-        Debug.Log("trigger enter");
         if (col.gameObject.CompareTag(Tags.Player))
         {
             _playersTriggered++;
@@ -56,8 +52,7 @@ public class Button : MonoBehaviour
                 IsActivated = true;
                 if (Target != null)
                 {
-                    Target.SendMessage(ActivateEvent);
-                    Debug.LogFormat("Pressed button {0}", gameObject.name);
+                    Target.SendMessage(ActivatorProxy.ActivateEvent);
                 }
                 else
                 {
@@ -78,8 +73,7 @@ public class Button : MonoBehaviour
                 IsActivated = false;
                 if (Target != null)
                 {
-                    Target.SendMessage(DeActivateEvent);
-                    Debug.LogFormat("Unpressed button {0}", gameObject.name);
+                    Target.SendMessage(ActivatorProxy.DeActivateEvent);
                 }
                 else
                 {

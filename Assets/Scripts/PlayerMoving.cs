@@ -11,11 +11,9 @@ public class PlayerMoving : MonoBehaviour {
     public float MaximumSpeed = 0.05f;
     public float RotationSpeed = 10f;
     public float Speed;
-
-    private Vector3 _previousPoint = new Vector3(0, 0, 0);
-    private Vector3 _currentPoint = new Vector3(0, 0, 0);
-
+    
     private Animator _childAnimator;
+    private ParticleSystem _dustParticleSystem;
 
     /// <summary>
     /// Ref to player's rigid body
@@ -25,10 +23,12 @@ public class PlayerMoving : MonoBehaviour {
     private float _punchCooldown = 0.5f;
     private float _lastPunchTime = 0f;
 
-    // Use this for initialization
-    void Start () {
+    void Start ()
+    {
         _rigidBody = GetComponent<Rigidbody>();
         _childAnimator = GetComponentInChildren<Animator>();
+        _dustParticleSystem = GetComponentInChildren<ParticleSystem>();
+        _dustParticleSystem.Stop();
     }
 	
 	// Update is called once per frame
@@ -42,7 +42,7 @@ public class PlayerMoving : MonoBehaviour {
         var deltaRotation = Quaternion.Euler(eulerAngleVelocity * Time.deltaTime * RotationSpeed);
         _rigidBody.MoveRotation(_rigidBody.rotation * deltaRotation);
 
-        if (Input.GetAxis("Jump") != 0)
+        if (Input.GetButtonDown("Jump"))
         {
             if (Time.time - _lastPunchTime >= _punchCooldown)
             {
@@ -54,10 +54,17 @@ public class PlayerMoving : MonoBehaviour {
 
     void FixedUpdate()
     {
-        _previousPoint = _currentPoint;
-        _currentPoint = transform.position;
         var velocityMagnitude = Speed = _rigidBody.velocity.magnitude;
         _childAnimator.SetFloat("Speed", velocityMagnitude);
+
+        if (!_dustParticleSystem.isPlaying && velocityMagnitude > 0.01f)
+        {
+            _dustParticleSystem.Play();
+        }
+        else if(_dustParticleSystem.isPlaying && velocityMagnitude < 0.01f)
+        {
+            _dustParticleSystem.Stop();
+        }
 
         if (velocityMagnitude >= MaximumSpeed)
             return;
@@ -66,18 +73,47 @@ public class PlayerMoving : MonoBehaviour {
         forceVector *= ForceValue * Time.deltaTime;
         _rigidBody.AddForce(forceVector, ForceMode.Impulse);
         
+        /*
         var localTarget = transform.InverseTransformPoint(transform.localPosition + forceVector);
         var angle = Mathf.Atan2(localTarget.x, localTarget.z) * Mathf.Rad2Deg;
         var eulerAngleVelocity = new Vector3(0, angle, 0);
         var deltaRotation = Quaternion.Euler(eulerAngleVelocity * Time.deltaTime * RotationSpeed);
         _rigidBody.MoveRotation(_rigidBody.rotation * deltaRotation);
+        */
+
+        if (forceVector.magnitude > 0.01f)
+        {
+            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(forceVector.normalized),
+                Time.deltaTime*RotationSpeed);
+        }
     }
 
     void OnCollisionEnter(Collision col)
     {
+        if (col.gameObject.CompareTag(Tags.MovingPlatform))
+        {
+            transform.parent = col.transform;
+        }
     }
 
     void OnCollisionExit(Collision col)
     {
+        if (col.gameObject.CompareTag(Tags.MovingPlatform))
+        {
+            transform.parent = null;
+        }
+    }
+
+    void OnCollisionStay(Collision col)
+    {
+        /*
+        if (col.gameObject.CompareTag(Tags.MovingPlatform))
+        {
+            transform.parent = col.transform;
+        }
+        else
+        {
+            transform.parent = null;
+        }*/
     }
 }
