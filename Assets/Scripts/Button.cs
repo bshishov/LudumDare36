@@ -12,6 +12,7 @@ public class Button : MonoBehaviour
     public float PressDepth = 0.1f;
     public float PressingSpeed = 4f;
 
+    private int _playersTriggered = 0;
     private float _currentState = 0f;
     private Vector3 _initialPosition;
     private Vector3 _pressedPosition;
@@ -48,7 +49,9 @@ public class Button : MonoBehaviour
         Debug.Log("trigger enter");
         if (col.gameObject.CompareTag(Tags.Player))
         {
-            if (!IsActivated)
+            _playersTriggered++;
+
+            if (!IsActivated && _playersTriggered == 1)
             {
                 IsActivated = true;
                 if (Target != null)
@@ -68,7 +71,9 @@ public class Button : MonoBehaviour
     {
         if (col.gameObject.CompareTag(Tags.Player))
         {
-            if (IsActivated)
+            _playersTriggered--;
+
+            if (IsActivated && _playersTriggered == 0)
             {
                 IsActivated = false;
                 if (Target != null)
@@ -81,6 +86,15 @@ public class Button : MonoBehaviour
                     Debug.LogWarning("Trying to deactivate, but button target is not set", this);
                 }
             }
+        }
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        if (Target != null)
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawLine(transform.position, Target.transform.position);
         }
     }
 }
