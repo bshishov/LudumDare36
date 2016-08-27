@@ -36,11 +36,11 @@ public class PlayerMoving : MonoBehaviour {
     {
         var forceVector = new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical")).normalized;
 
-        var localTarget = transform.InverseTransformPoint(transform.localPosition + forceVector);
-        var angle = Mathf.Atan2(localTarget.x, localTarget.z) * Mathf.Rad2Deg;
-        var eulerAngleVelocity = new Vector3(0, angle, 0);
-        var deltaRotation = Quaternion.Euler(eulerAngleVelocity * Time.deltaTime * RotationSpeed);
-        _rigidBody.MoveRotation(_rigidBody.rotation * deltaRotation);
+        if (forceVector.magnitude > 0.01f)
+        {
+            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(forceVector.normalized),
+                Time.deltaTime * RotationSpeed);
+        }
 
         if (Input.GetButtonDown("Jump"))
         {
@@ -72,20 +72,6 @@ public class PlayerMoving : MonoBehaviour {
         var forceVector = new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical")).normalized;
         forceVector *= ForceValue * Time.deltaTime;
         _rigidBody.AddForce(forceVector, ForceMode.Impulse);
-        
-        /*
-        var localTarget = transform.InverseTransformPoint(transform.localPosition + forceVector);
-        var angle = Mathf.Atan2(localTarget.x, localTarget.z) * Mathf.Rad2Deg;
-        var eulerAngleVelocity = new Vector3(0, angle, 0);
-        var deltaRotation = Quaternion.Euler(eulerAngleVelocity * Time.deltaTime * RotationSpeed);
-        _rigidBody.MoveRotation(_rigidBody.rotation * deltaRotation);
-        */
-
-        if (forceVector.magnitude > 0.01f)
-        {
-            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(forceVector.normalized),
-                Time.deltaTime*RotationSpeed);
-        }
     }
 
     void OnCollisionEnter(Collision col)
