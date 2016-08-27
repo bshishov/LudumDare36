@@ -11,6 +11,17 @@ public class PlayerMoving : MonoBehaviour {
     public float MaximumSpeed = 0.05f;
     public float RotationSpeed = 10f;
     public float Speed;
+    public float PunchMultiplier = 20f;
+
+    /// <summary>
+    /// Setting the spawn point of player
+    /// </summary>
+    public GameObject SpawnPoint;
+
+    /// <summary>
+    /// Temporary flag for controlling only one player object on the scene
+    /// </summary>
+    public bool MainPlayer = false;
     
     private Animator _childAnimator;
     private ParticleSystem _dustParticleSystem;
@@ -25,15 +36,24 @@ public class PlayerMoving : MonoBehaviour {
 
     void Start ()
     {
+        // prepare components
         _rigidBody = GetComponent<Rigidbody>();
         _childAnimator = GetComponentInChildren<Animator>();
         _dustParticleSystem = GetComponentInChildren<ParticleSystem>();
         _dustParticleSystem.Stop();
+
+        // initialization
+        PlayerToSpawn();
     }
 	
 	// Update is called once per frame
 	void Update ()
     {
+        if (transform.position.y <= -2f)
+            InitiateDeath();
+
+        if (!MainPlayer) return;
+
         var forceVector = new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical")).normalized;
 
         if (forceVector.magnitude > 0.01f)
@@ -48,12 +68,23 @@ public class PlayerMoving : MonoBehaviour {
             {
                 _lastPunchTime = Time.time;
                 _childAnimator.SetTrigger("Punch");
+
+                RaycastHit hit;
+                var forward = transform.TransformDirection(Vector3.forward);
+                var initialPosition = transform.position;
+                initialPosition.y = 0.5f;
+                var ray = new Ray(initialPosition, forward);
+                if (Physics.Raycast(ray, out hit, 0.3f))
+                    if (hit.collider != null && hit.collider.gameObject.tag == Tags.Player)
+                        hit.collider.gameObject.GetComponent<PlayerMoving>().GetPunched(forward);
             }
         }
     }
 
     void FixedUpdate()
     {
+        if (!MainPlayer) return;
+
         var velocityMagnitude = Speed = _rigidBody.velocity.magnitude;
         _childAnimator.SetFloat("Speed", velocityMagnitude);
 
@@ -72,6 +103,29 @@ public class PlayerMoving : MonoBehaviour {
         var forceVector = new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical")).normalized;
         forceVector *= ForceValue * Time.deltaTime;
         _rigidBody.AddForce(forceVector, ForceMode.Impulse);
+    }
+
+    /// <summary>
+    /// Getting a punch from any other object
+    /// </summary>
+    /// <param name="direction"></param>
+    public void GetPunched(Vector3 direction)
+    {
+        _rigidBody.AddForce(direction.normalized * PunchMultiplier, ForceMode.Impulse);
+    }
+
+    /// <summary>
+    /// Actions made after player is killed
+    /// </summary>
+    public void InitiateDeath()
+    {
+        _lastPunchTime = Time.time - 2 * _punchCooldown;
+        PlayerToSpawn();
+    }
+
+    public void PlayerToSpawn()
+    {
+        transform.position = SpawnPoint.transform.position;
     }
 
     void OnCollisionEnter(Collision col)
@@ -101,5 +155,18 @@ public class PlayerMoving : MonoBehaviour {
         {
             transform.parent = null;
         }*/
+    }
+
+    void OnTriggerEnter(Collider col)
+    {
+        if (col.gameObject.CompareTag(Tags.Killer))
+        {
+            InitiateDeath();
+        }
+
+        if (col.gameObject.CompareTag(Tags.Respawn))
+        {
+            SpawnPoint = col.gameObject;
+        }
     }
 }
