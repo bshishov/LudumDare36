@@ -3,18 +3,64 @@ using System.Collections;
 
 public class PlayerMoving : MonoBehaviour {
 
-    public float SpeedVelue = 0.1f;
+    /// <summary>
+    /// Applied force multiplier
+    /// </summary>
+    public float ForceValue = 10f;
+    public float MaximumSpeed = 0.05f;
 
-	// Use this for initialization
-	void Start () {
-	
-	}
+    public float Speed = 10f;
+
+    private Vector3 _previousPoint = new Vector3(0, 0, 0);
+    private Vector3 _currentPoint = new Vector3(0, 0, 0);
+
+    /// <summary>
+    /// Ref to player's rigid body
+    /// </summary>
+    private Rigidbody _rigidBody;
+
+    // Use this for initialization
+    void Start () {
+        _rigidBody = GetComponent<Rigidbody>();
+    }
 	
 	// Update is called once per frame
-	void Update () {
-        var x = Input.GetAxis("Horizontal") * SpeedVelue;
-        var z = Input.GetAxis("Vertical") * SpeedVelue;
-        var speedVector = new Vector3(x, 0f, z);
-        transform.Translate(speedVector.normalized, Space.World);
+	void Update ()
+    {
+    }
+
+    void FixedUpdate()
+    {
+        _previousPoint = _currentPoint;
+        _currentPoint = transform.position;
+        Speed = GetSpeed();
+
+        if (Speed >= MaximumSpeed)
+            return;
+
+        var speedVector = new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical")).normalized;
+        speedVector *= ForceValue * Time.deltaTime;
+        _rigidBody.AddForce(speedVector, ForceMode.Impulse);
+    }
+    
+    private float GetSpeed()
+    {
+        return (_currentPoint - _previousPoint).magnitude;
+    }
+
+    void OnCollisionEnter(Collision col)
+    {
+        if (col.gameObject.tag == "Slippery Surface")
+        {
+            Destroy(col.gameObject);
+        }
+    }
+
+    void OnCollisionExit(Collision col)
+    {
+        if (col.gameObject.name == "Slippery Surface")
+        {
+            Destroy(col.gameObject);
+        }
     }
 }
