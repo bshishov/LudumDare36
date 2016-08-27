@@ -8,6 +8,7 @@ public class PlayerMoving : MonoBehaviour {
     /// </summary>
     public float ForceValue = 10f;
     public float MaximumSpeed = 0.05f;
+    public float RotationSpeed = 10f;
 
     public float Speed = 10f;
 
@@ -38,9 +39,16 @@ public class PlayerMoving : MonoBehaviour {
         if (Speed >= MaximumSpeed)
             return;
 
-        var speedVector = new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical")).normalized;
-        speedVector *= ForceValue * Time.deltaTime;
-        _rigidBody.AddForce(speedVector, ForceMode.Impulse);
+        var forceVector = new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical")).normalized;
+        forceVector *= ForceValue * Time.deltaTime;
+        _rigidBody.AddForce(forceVector, ForceMode.Impulse);
+        
+        var localTarget = transform.InverseTransformPoint(transform.position + forceVector);
+
+        var angle = Mathf.Atan2(localTarget.x, localTarget.z) * Mathf.Rad2Deg;
+        var eulerAngleVelocity = new Vector3(0, angle, 0);
+        var deltaRotation = Quaternion.Euler(eulerAngleVelocity * Time.deltaTime * RotationSpeed);
+        _rigidBody.MoveRotation(_rigidBody.rotation * deltaRotation);
     }
     
     private float GetSpeed()
