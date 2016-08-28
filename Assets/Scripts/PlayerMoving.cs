@@ -7,7 +7,8 @@ public class PlayerMoving : MonoBehaviour {
     /// <summary>
     /// Applied force multiplier
     /// </summary>
-    public float ForceValue = 10f;
+    public float DefaultForceValue = 70f;
+    public float ForceValueForIce = 0.2f;
     public float MaximumSpeed = 0.05f;
     public float RotationSpeed = 10f;
     public float Speed;
@@ -34,6 +35,9 @@ public class PlayerMoving : MonoBehaviour {
     private float _punchCooldown = 0.5f;
     private float _lastPunchTime = 0f;
 
+    [SerializeField]
+    private float _forceValue;
+
     void Start ()
     {
         // prepare components
@@ -44,6 +48,7 @@ public class PlayerMoving : MonoBehaviour {
 
         // initialization
         PlayerToSpawn();
+        _forceValue = DefaultForceValue;
     }
 	
 	// Update is called once per frame
@@ -75,7 +80,7 @@ public class PlayerMoving : MonoBehaviour {
                 initialPosition.y = 0.5f;
                 var ray = new Ray(initialPosition, forward);
                 if (Physics.Raycast(ray, out hit, 0.3f))
-                    if (hit.collider != null && hit.collider.gameObject.tag == Tags.Player)
+                    if (hit.collider != null && hit.collider.gameObject.CompareTag(Tags.Player))
                         hit.collider.gameObject.GetComponent<PlayerMoving>().GetPunched(forward);
             }
         }
@@ -101,8 +106,10 @@ public class PlayerMoving : MonoBehaviour {
             return;
 
         var forceVector = new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical")).normalized;
-        forceVector *= ForceValue * Time.deltaTime;
+        forceVector *= _forceValue * Time.deltaTime;
         _rigidBody.AddForce(forceVector, ForceMode.Impulse);
+
+        TryFloor();
     }
 
     /// <summary>
@@ -121,6 +128,25 @@ public class PlayerMoving : MonoBehaviour {
     {
         _lastPunchTime = Time.time - 2 * _punchCooldown;
         PlayerToSpawn();
+    }
+
+    public void TryFloor()
+    {
+        RaycastHit hit;
+        var forward = transform.TransformDirection(Vector3.down);
+        var initialPosition = transform.position;
+        var ray = new Ray(initialPosition, forward);
+        if (Physics.Raycast(ray, out hit, 0.3f))
+        {
+            if (hit.collider != null && hit.collider.gameObject.CompareTag(Tags.SlipperySurface))
+            {
+                _forceValue = ForceValueForIce;
+            }
+            else
+            {
+                _forceValue = DefaultForceValue;
+            }
+        }
     }
 
     public void PlayerToSpawn()
@@ -146,15 +172,6 @@ public class PlayerMoving : MonoBehaviour {
 
     void OnCollisionStay(Collision col)
     {
-        /*
-        if (col.gameObject.CompareTag(Tags.MovingPlatform))
-        {
-            transform.parent = col.transform;
-        }
-        else
-        {
-            transform.parent = null;
-        }*/
     }
 
     void OnTriggerEnter(Collider col)
@@ -168,5 +185,9 @@ public class PlayerMoving : MonoBehaviour {
         {
             SpawnPoint = col.gameObject;
         }
+    }
+
+    void OnTriggerExit(Collider col)
+    {
     }
 }
