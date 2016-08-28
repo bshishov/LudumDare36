@@ -26,6 +26,7 @@ public class PlayerMoving : MonoBehaviour {
     
     private Animator _childAnimator;
     private ParticleSystem _dustParticleSystem;
+    private CameraMovement _cameraMovement;
 
     /// <summary>
     /// Ref to player's rigid body
@@ -41,6 +42,7 @@ public class PlayerMoving : MonoBehaviour {
     void Start ()
     {
         // prepare components
+        _cameraMovement = GameObject.Find("Main Camera").GetComponent<CameraMovement>();
         _rigidBody = GetComponent<Rigidbody>();
         _childAnimator = GetComponentInChildren<Animator>();
         _dustParticleSystem = GetComponentInChildren<ParticleSystem>();
@@ -91,7 +93,6 @@ public class PlayerMoving : MonoBehaviour {
         if (!MainPlayer) return;
 
         var velocityMagnitude = Speed = _rigidBody.velocity.magnitude;
-        _childAnimator.SetFloat("Speed", velocityMagnitude);
 
         if (!_dustParticleSystem.isPlaying && velocityMagnitude > 0.01f)
         {
@@ -108,6 +109,17 @@ public class PlayerMoving : MonoBehaviour {
         var forceVector = new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical")).normalized;
         forceVector *= _forceValue * Time.deltaTime;
         _rigidBody.AddForce(forceVector, ForceMode.Impulse);
+
+        if (_forceValue == ForceValueForIce)
+        {
+            var angle = Vector3.Angle(_rigidBody.velocity, _rigidBody.transform.forward) * 2 * Mathf.PI /360;
+            var animationSpeed = 1.5f * velocityMagnitude * (Mathf.Abs(Mathf.Sin(angle * 2f)) + 0.5f);
+            _childAnimator.SetFloat("Speed", animationSpeed);
+        }
+        else
+        {
+            _childAnimator.SetFloat("Speed", velocityMagnitude);
+        }
 
         TryFloor();
     }
@@ -133,7 +145,7 @@ public class PlayerMoving : MonoBehaviour {
     public void TryFloor()
     {
         RaycastHit hit;
-        var forward = transform.TransformDirection(new Vector3(0f, -1f, 0.01f));
+        var forward = transform.TransformDirection(new Vector3(0f, -1f, 0.05f));
         var initialPosition = transform.position;
         initialPosition.y = 0.5f;
         var ray = new Ray(initialPosition, forward);
@@ -152,7 +164,8 @@ public class PlayerMoving : MonoBehaviour {
 
     public void PlayerToSpawn()
     {
-        transform.position = SpawnPoint.transform.position;
+        transform.position = SpawnPoint.transform.position - Vector3.up;
+        _cameraMovement.SetLastTrackedPosition(transform.position);
     }
 
     void OnCollisionEnter(Collision col)
@@ -182,9 +195,10 @@ public class PlayerMoving : MonoBehaviour {
             InitiateDeath();
         }
 
-        if (col.gameObject.CompareTag(Tags.Respawn))
+        if (col.gameObject.CompareTag(Tags.Respawn) && SpawnPoint != col.gameObject)
         {
             SpawnPoint = col.gameObject;
+            col.gameObject.GetComponent<Animator>().SetTrigger("Rotate");
         }
     }
 
