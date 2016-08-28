@@ -133,10 +133,11 @@ public class PlayerMoving : MonoBehaviour {
     public void TryFloor()
     {
         RaycastHit hit;
-        var forward = transform.TransformDirection(Vector3.down);
+        var forward = transform.TransformDirection(new Vector3(0f, -1f, 0.01f));
         var initialPosition = transform.position;
+        initialPosition.y = 0.5f;
         var ray = new Ray(initialPosition, forward);
-        if (Physics.Raycast(ray, out hit, 0.3f))
+        if (Physics.Raycast(ray, out hit, 1f))
         {
             if (hit.collider != null && hit.collider.gameObject.CompareTag(Tags.SlipperySurface))
             {
