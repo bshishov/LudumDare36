@@ -2,9 +2,9 @@
 
 public class SpawnPoint : MonoBehaviour
 {
-    public static string PlayerActivateMessageKey = "OnPlayerActivate";
-    public static string PlayerDeactivateMessageKey = "OnPlayerDeactivate";
-    public static string PlayerRespawnMessageKey = "OnPlayerRespawn";
+    public static string PlayerActivateMessage = "OnPlayerActivate";
+    public static string PlayerDeactivateMessage = "OnPlayerDeactivate";
+    public static string PlayerRespawnMessage = "OnPlayerRespawn";
 
     private ParticleSystem _particleSystem;
     private Animator _bannerAnimator;
@@ -13,12 +13,11 @@ public class SpawnPoint : MonoBehaviour
 	{
 	    _particleSystem = GetComponentInChildren<ParticleSystem>();
         _bannerAnimator = GetComponentInChildren<Animator>();
-        _particleSystem.Stop();
 	}
 
     public void OnPlayerRespawn()
     {
-        _bannerAnimator.SetTrigger("Rotate");
+        _bannerAnimator.SetTrigger("Respawn");
     }
 
     public void OnPlayerActivate()

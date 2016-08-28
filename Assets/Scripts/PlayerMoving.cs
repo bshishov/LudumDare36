@@ -17,11 +17,6 @@ public class PlayerMoving : NetworkBehaviour
     public float PunchMultiplier = 20f;
 
     public ParticleSystem BloodParticles;
-
-    /// <summary>
-    /// Setting the spawn point of player
-    /// </summary>
-    public GameObject SpawnPoint;
     
     private Animator _childAnimator;
     private ParticleSystem _dustParticleSystem;
@@ -47,10 +42,8 @@ public class PlayerMoving : NetworkBehaviour
         _rigidBody = GetComponent<Rigidbody>();
         _childAnimator = GetComponentInChildren<Animator>();
         _dustParticleSystem = GetComponentInChildren<ParticleSystem>();
-        _spawnPoint = GameObject.Find("MainSpawn/Banner");
+        _spawnPoint = GameObject.Find("MainSpawn");
         _bloodParticles = Instantiate(BloodParticles);
-        _bloodParticles.Stop();
-        _dustParticleSystem.Stop();
 
         if (!isLocalPlayer)
             return;
@@ -106,11 +99,11 @@ public class PlayerMoving : NetworkBehaviour
         var velocityMagnitude = Speed = _rigidBody.velocity.magnitude;
         _childAnimator.SetFloat("Speed", velocityMagnitude);
 
-        if (!_dustParticleSystem.isPlaying && velocityMagnitude > 0.01f)
+        if (!_dustParticleSystem.isPlaying && velocityMagnitude > 0.1f)
         {
             _dustParticleSystem.Play();
         }
-        else if (_dustParticleSystem.isPlaying && velocityMagnitude < 0.01f)
+        else if (_dustParticleSystem.isPlaying && velocityMagnitude < 0.1f)
         {
             _dustParticleSystem.Stop();
         }
@@ -192,8 +185,10 @@ public class PlayerMoving : NetworkBehaviour
 
     public void PlayerToSpawn()
     {
-        transform.position = _spawnPoint.transform.position - Vector3.up;
+        transform.position = _spawnPoint.transform.position;
         _cameraMovement.SetLastTrackedPosition(transform.position);
+
+        _spawnPoint.SendMessage(SpawnPoint.PlayerRespawnMessage);
     }
 
     void OnCollisionEnter(Collision col)
@@ -227,8 +222,11 @@ public class PlayerMoving : NetworkBehaviour
         {
             if (!isLocalPlayer)
                 return;
+
+            if(_spawnPoint != null)
+                _spawnPoint.SendMessage(SpawnPoint.PlayerDeactivateMessage);
             _spawnPoint = col.gameObject;
-            col.gameObject.GetComponent<Animator>().SetTrigger("Rotate");
+            _spawnPoint.SendMessage(SpawnPoint.PlayerActivateMessage);
         }
     }
 
