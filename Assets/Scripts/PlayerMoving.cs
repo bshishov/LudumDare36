@@ -14,6 +14,8 @@ public class PlayerMoving : MonoBehaviour {
     public float Speed;
     public float PunchMultiplier = 20f;
 
+    public ParticleSystem BloodParticles;
+
     /// <summary>
     /// Setting the spawn point of player
     /// </summary>
@@ -26,6 +28,7 @@ public class PlayerMoving : MonoBehaviour {
     
     private Animator _childAnimator;
     private ParticleSystem _dustParticleSystem;
+    private ParticleSystem _bloodParticles;
     private CameraMovement _cameraMovement;
 
     /// <summary>
@@ -45,7 +48,9 @@ public class PlayerMoving : MonoBehaviour {
         _cameraMovement = GameObject.Find("Main Camera").GetComponent<CameraMovement>();
         _rigidBody = GetComponent<Rigidbody>();
         _childAnimator = GetComponentInChildren<Animator>();
-        _dustParticleSystem = GetComponentInChildren<ParticleSystem>();
+        _dustParticleSystem = GameObject.Find("FootDust").GetComponent<ParticleSystem>();
+        _bloodParticles = Instantiate(BloodParticles);
+        _bloodParticles.Stop();
         _dustParticleSystem.Stop();
 
         // initialization
@@ -130,7 +135,7 @@ public class PlayerMoving : MonoBehaviour {
     /// <param name="direction"></param>
     public void GetPunched(Vector3 direction)
     {
-        _rigidBody.AddForce(direction.normalized * PunchMultiplier, ForceMode.Impulse);
+        _rigidBody.AddForce(((direction + new Vector3(0f, 1f, 0f)).normalized) * PunchMultiplier, ForceMode.Impulse);
     }
 
     /// <summary>
@@ -138,6 +143,8 @@ public class PlayerMoving : MonoBehaviour {
     /// </summary>
     public void InitiateDeath()
     {
+        _bloodParticles.transform.position = transform.position + new Vector3(0f, 0.05f, 0f);
+        _bloodParticles.Play();
         _lastPunchTime = Time.time - 2 * _punchCooldown;
         PlayerToSpawn();
     }
