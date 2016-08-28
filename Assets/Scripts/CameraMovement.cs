@@ -14,7 +14,7 @@ public class CameraMovement : MonoBehaviour
 
     void Start ()
 	{
-	    _offset = transform.position - TrackedObject.transform.position;
+	    _offset = transform.position - TrackedObject.transform.position + Vector3.back;
         _lastTrackedObjectPosition = TrackedObject.transform.position;
 	}
 	
@@ -36,5 +36,10 @@ public class CameraMovement : MonoBehaviour
             Gizmos.color = Color.magenta;
             Gizmos.DrawLine(transform.position, TrackedObject.transform.position);
         }
+    }
+
+    public void SetLastTrackedPosition(Vector3 position)
+    {
+        _lastTrackedObjectPosition = position;
     }
 }

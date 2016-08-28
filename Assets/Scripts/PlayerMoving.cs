@@ -14,6 +14,8 @@ public class PlayerMoving : MonoBehaviour {
     public float Speed;
     public float PunchMultiplier = 20f;
 
+    public ParticleSystem BloodParticles;
+
     /// <summary>
     /// Setting the spawn point of player
     /// </summary>
@@ -26,6 +28,8 @@ public class PlayerMoving : MonoBehaviour {
     
     private Animator _childAnimator;
     private ParticleSystem _dustParticleSystem;
+    private ParticleSystem _bloodParticles;
+    private CameraMovement _cameraMovement;
 
     /// <summary>
     /// Ref to player's rigid body
@@ -41,9 +45,12 @@ public class PlayerMoving : MonoBehaviour {
     void Start ()
     {
         // prepare components
+        _cameraMovement = GameObject.Find("Main Camera").GetComponent<CameraMovement>();
         _rigidBody = GetComponent<Rigidbody>();
         _childAnimator = GetComponentInChildren<Animator>();
-        _dustParticleSystem = GetComponentInChildren<ParticleSystem>();
+        _dustParticleSystem = GameObject.Find("FootDust").GetComponent<ParticleSystem>();
+        _bloodParticles = Instantiate(BloodParticles);
+        _bloodParticles.Stop();
         _dustParticleSystem.Stop();
 
         // initialization
@@ -91,7 +98,6 @@ public class PlayerMoving : MonoBehaviour {
         if (!MainPlayer) return;
 
         var velocityMagnitude = Speed = _rigidBody.velocity.magnitude;
-        _childAnimator.SetFloat("Speed", velocityMagnitude);
 
         if (!_dustParticleSystem.isPlaying && velocityMagnitude > 0.01f)
         {
@@ -109,6 +115,17 @@ public class PlayerMoving : MonoBehaviour {
         forceVector *= _forceValue * Time.deltaTime;
         _rigidBody.AddForce(forceVector, ForceMode.Impulse);
 
+        if (_forceValue == ForceValueForIce)
+        {
+            var angle = Vector3.Angle(_rigidBody.velocity, _rigidBody.transform.forward) * 2 * Mathf.PI /360;
+            var animationSpeed = 1.5f * velocityMagnitude * (Mathf.Abs(Mathf.Sin(angle * 2f)) + 0.5f);
+            _childAnimator.SetFloat("Speed", animationSpeed);
+        }
+        else
+        {
+            _childAnimator.SetFloat("Speed", velocityMagnitude);
+        }
+
         TryFloor();
     }
 
@@ -118,7 +135,7 @@ public class PlayerMoving : MonoBehaviour {
     /// <param name="direction"></param>
     public void GetPunched(Vector3 direction)
     {
-        _rigidBody.AddForce(direction.normalized * PunchMultiplier, ForceMode.Impulse);
+        _rigidBody.AddForce(((direction + new Vector3(0f, 1f, 0f)).normalized) * PunchMultiplier, ForceMode.Impulse);
     }
 
     /// <summary>
@@ -126,6 +143,8 @@ public class PlayerMoving : MonoBehaviour {
     /// </summary>
     public void InitiateDeath()
     {
+        _bloodParticles.transform.position = transform.position + new Vector3(0f, 0.05f, 0f);
+        _bloodParticles.Play();
         _lastPunchTime = Time.time - 2 * _punchCooldown;
         PlayerToSpawn();
     }
@@ -133,7 +152,7 @@ public class PlayerMoving : MonoBehaviour {
     public void TryFloor()
     {
         RaycastHit hit;
-        var forward = transform.TransformDirection(new Vector3(0f, -1f, 0.01f));
+        var forward = transform.TransformDirection(new Vector3(0f, -1f, 0.05f));
         var initialPosition = transform.position;
         initialPosition.y = 0.5f;
         var ray = new Ray(initialPosition, forward);
@@ -152,7 +171,8 @@ public class PlayerMoving : MonoBehaviour {
 
     public void PlayerToSpawn()
     {
-        transform.position = SpawnPoint.transform.position;
+        transform.position = SpawnPoint.transform.position - Vector3.up;
+        _cameraMovement.SetLastTrackedPosition(transform.position);
     }
 
     void OnCollisionEnter(Collision col)
@@ -182,9 +202,10 @@ public class PlayerMoving : MonoBehaviour {
             InitiateDeath();
         }
 
-        if (col.gameObject.CompareTag(Tags.Respawn))
+        if (col.gameObject.CompareTag(Tags.Respawn) && SpawnPoint != col.gameObject)
         {
             SpawnPoint = col.gameObject;
+            col.gameObject.GetComponent<Animator>().SetTrigger("Rotate");
         }
     }
 
