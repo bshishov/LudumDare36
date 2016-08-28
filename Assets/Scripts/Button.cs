@@ -5,7 +5,7 @@ using UnityEngine.Events;
 [RequireComponent(typeof(Collider))]
 public class Button : MonoBehaviour
 {
-    public GameObject Target;
+    public GameObject[] Targets;
     public float PressDepth = 0.1f;
     public float PressingSpeed = 4f;
 
@@ -50,13 +50,9 @@ public class Button : MonoBehaviour
             if (!IsActivated && _playersTriggered == 1)
             {
                 IsActivated = true;
-                if (Target != null)
+                foreach (var target in Targets)
                 {
-                    Target.SendMessage(ActivatorProxy.ActivateEvent);
-                }
-                else
-                {
-                    Debug.LogWarning("Trying to activate, but button target is not set", this);
+                    target.SendMessage(ActivatorProxy.ActivateEvent);
                 }
             }
         }
@@ -71,13 +67,9 @@ public class Button : MonoBehaviour
             if (IsActivated && _playersTriggered == 0)
             {
                 IsActivated = false;
-                if (Target != null)
+                foreach (var target in Targets)
                 {
-                    Target.SendMessage(ActivatorProxy.DeActivateEvent);
-                }
-                else
-                {
-                    Debug.LogWarning("Trying to deactivate, but button target is not set", this);
+                    target.SendMessage(ActivatorProxy.DeActivateEvent);
                 }
             }
         }
@@ -85,10 +77,13 @@ public class Button : MonoBehaviour
 
     void OnDrawGizmosSelected()
     {
-        if (Target != null)
+        foreach (var target in Targets)
         {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawLine(transform.position, Target.transform.position);
+            if (target != null)
+            {
+                Gizmos.color = Color.yellow;
+                Gizmos.DrawLine(transform.position, target.transform.position);
+            }
         }
     }
 }
