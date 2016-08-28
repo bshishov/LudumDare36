@@ -1,8 +1,10 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.Networking;
 
 [RequireComponent(typeof(Rigidbody))]
-public class PlayerMoving : MonoBehaviour {
+public class PlayerMoving : NetworkBehaviour
+{
 
     /// <summary>
     /// Applied force multiplier
@@ -20,11 +22,6 @@ public class PlayerMoving : MonoBehaviour {
     /// Setting the spawn point of player
     /// </summary>
     public GameObject SpawnPoint;
-
-    /// <summary>
-    /// Temporary flag for controlling only one player object on the scene
-    /// </summary>
-    public bool MainPlayer = false;
     
     private Animator _childAnimator;
     private ParticleSystem _dustParticleSystem;
@@ -35,6 +32,7 @@ public class PlayerMoving : MonoBehaviour {
     /// Ref to player's rigid body
     /// </summary>
     private Rigidbody _rigidBody;
+    private GameObject _spawnPoint;
 
     private float _punchCooldown = 0.5f;
     private float _lastPunchTime = 0f;
@@ -45,26 +43,36 @@ public class PlayerMoving : MonoBehaviour {
     void Start ()
     {
         // prepare components
-        _cameraMovement = GameObject.Find("Main Camera").GetComponent<CameraMovement>();
+        _cameraMovement = Camera.main.GetComponent<CameraMovement>();
         _rigidBody = GetComponent<Rigidbody>();
         _childAnimator = GetComponentInChildren<Animator>();
-        _dustParticleSystem = GameObject.Find("FootDust").GetComponent<ParticleSystem>();
+        _dustParticleSystem = GetComponentInChildren<ParticleSystem>();
+        _spawnPoint = GameObject.Find("MainSpawn/Banner");
         _bloodParticles = Instantiate(BloodParticles);
         _bloodParticles.Stop();
         _dustParticleSystem.Stop();
 
+        if (!isLocalPlayer)
+            return;
+
         // initialization
+        _cameraMovement.SetTarget(gameObject);
         PlayerToSpawn();
         _forceValue = DefaultForceValue;
     }
-	
-	// Update is called once per frame
-	void Update ()
+
+    public override void OnStartLocalPlayer()
     {
+    }
+
+    // Update is called once per frame
+    void Update ()
+    {
+        if (!isLocalPlayer)
+            return;
+
         if (transform.position.y <= -2f)
             InitiateDeath();
-
-        if (!MainPlayer) return;
 
         var forceVector = new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical")).normalized;
 
@@ -86,27 +94,29 @@ public class PlayerMoving : MonoBehaviour {
                 var initialPosition = transform.position;
                 initialPosition.y = 0.5f;
                 var ray = new Ray(initialPosition, forward);
-                if (Physics.Raycast(ray, out hit, 0.3f))
+                if (Physics.Raycast(ray, out hit, 0.5f))
                     if (hit.collider != null && hit.collider.gameObject.CompareTag(Tags.Player))
-                        hit.collider.gameObject.GetComponent<PlayerMoving>().GetPunched(forward);
+                        CmdPunch(hit.collider.gameObject, forward);
             }
         }
     }
 
     void FixedUpdate()
     {
-        if (!MainPlayer) return;
-
         var velocityMagnitude = Speed = _rigidBody.velocity.magnitude;
+        _childAnimator.SetFloat("Speed", velocityMagnitude);
 
         if (!_dustParticleSystem.isPlaying && velocityMagnitude > 0.01f)
         {
             _dustParticleSystem.Play();
         }
-        else if(_dustParticleSystem.isPlaying && velocityMagnitude < 0.01f)
+        else if (_dustParticleSystem.isPlaying && velocityMagnitude < 0.01f)
         {
             _dustParticleSystem.Stop();
         }
+
+        if (!isLocalPlayer)
+            return;
 
         if (velocityMagnitude >= MaximumSpeed)
             return;
@@ -115,6 +125,7 @@ public class PlayerMoving : MonoBehaviour {
         forceVector *= _forceValue * Time.deltaTime;
         _rigidBody.AddForce(forceVector, ForceMode.Impulse);
 
+        // setting animation speed
         if (_forceValue == ForceValueForIce)
         {
             var angle = Vector3.Angle(_rigidBody.velocity, _rigidBody.transform.forward) * 2 * Mathf.PI /360;
@@ -133,7 +144,17 @@ public class PlayerMoving : MonoBehaviour {
     /// Getting a punch from any other object
     /// </summary>
     /// <param name="direction"></param>
-    public void GetPunched(Vector3 direction)
+    [Command]
+    public void CmdPunch(GameObject target, Vector3 direction)
+    {
+        if (!isServer)
+            return;
+
+        target.GetComponent<PlayerMoving>().RpcPushPlayer(direction);
+    }
+
+    [ClientRpc]
+    public void RpcPushPlayer(Vector3 direction)
     {
         _rigidBody.AddForce(((direction + new Vector3(0f, 1f, 0f)).normalized) * PunchMultiplier, ForceMode.Impulse);
     }
@@ -171,7 +192,7 @@ public class PlayerMoving : MonoBehaviour {
 
     public void PlayerToSpawn()
     {
-        transform.position = SpawnPoint.transform.position - Vector3.up;
+        transform.position = _spawnPoint.transform.position - Vector3.up;
         _cameraMovement.SetLastTrackedPosition(transform.position);
     }
 
@@ -202,9 +223,11 @@ public class PlayerMoving : MonoBehaviour {
             InitiateDeath();
         }
 
-        if (col.gameObject.CompareTag(Tags.Respawn) && SpawnPoint != col.gameObject)
+        if (col.gameObject.CompareTag(Tags.Respawn) && _spawnPoint != col.gameObject)
         {
-            SpawnPoint = col.gameObject;
+            if (!isLocalPlayer)
+                return;
+            _spawnPoint = col.gameObject;
             col.gameObject.GetComponent<Animator>().SetTrigger("Rotate");
         }
     }

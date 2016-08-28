@@ -1,33 +1,44 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.Networking;
 
 public class CameraMovement : MonoBehaviour
 {
     public GameObject TrackedObject;
     public float SmoothTime = 2f;
     public float LookAhead = 2f;
+    public Vector3 Offset = new Vector3(0f, 4f, -1f);
 
     private Vector3 _velocity;
-    private Vector3 _offset;
     private Vector3 _lastTrackedObjectPosition;
 
 
     void Start ()
-	{
-	    _offset = transform.position - TrackedObject.transform.position + Vector3.back;
-        _lastTrackedObjectPosition = TrackedObject.transform.position;
+    {
 	}
 	
 	void Update ()
 	{
-	    var trackedObjectVelocity = TrackedObject.transform.position - _lastTrackedObjectPosition;
+        if (!TrackedObject)
+            return;
+
+        var trackedObjectVelocity = TrackedObject.transform.position - _lastTrackedObjectPosition;
 	    _lastTrackedObjectPosition = TrackedObject.transform.position;
 
         transform.position = Vector3.SmoothDamp(transform.position, 
-            TrackedObject.transform.position + _offset + trackedObjectVelocity * LookAhead, 
+            TrackedObject.transform.position + Offset + trackedObjectVelocity * LookAhead, 
             ref _velocity, 
             SmoothTime);
 	}
+
+    public void SetTarget(GameObject target)
+    {
+        TrackedObject = target;
+        _lastTrackedObjectPosition = TrackedObject.transform.position;
+        transform.position = TrackedObject.transform.position + Offset;
+        transform.LookAt(TrackedObject.transform);
+        transform.position = transform.position;
+    }
 
     void OnDrawGizmosSelected()
     {
