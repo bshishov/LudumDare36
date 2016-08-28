@@ -171,7 +171,7 @@ public class PlayerMoving : MonoBehaviour {
 
     public void PlayerToSpawn()
     {
-        transform.position = SpawnPoint.transform.position - Vector3.up;
+        transform.position = SpawnPoint.transform.position;
         _cameraMovement.SetLastTrackedPosition(transform.position);
     }
 
@@ -204,8 +204,11 @@ public class PlayerMoving : MonoBehaviour {
 
         if (col.gameObject.CompareTag(Tags.Respawn) && SpawnPoint != col.gameObject)
         {
+            if(SpawnPoint != null)
+                SpawnPoint.SendMessage("OnPlayerDeactivate");
             SpawnPoint = col.gameObject;
-            col.gameObject.GetComponent<Animator>().SetTrigger("Rotate");
+            col.gameObject.SendMessage("OnPlayerActivate");
+            //col.gameObject.GetComponent<Animator>().SetTrigger("Rotate");
         }
     }
 
