@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.Networking;
 
-public class HatsProvider : MonoBehaviour
+public class HatsProvider : NetworkBehaviour
 {
     public HatsData Hats;
 
@@ -19,8 +20,13 @@ public class HatsProvider : MonoBehaviour
 	    else
             _headTransform = gameObject.transform.FindChild(HeadObjectName);
         
-        SetHat(DefaultHat);
-	}
+        // SetHat(DefaultHat);
+    }
+
+    public override void OnStartLocalPlayer()
+    {
+        SetHat(PlayerPrefs.GetString("player_hat"));
+    }
 
     public void SetHat(string hat)
     {
@@ -34,6 +40,7 @@ public class HatsProvider : MonoBehaviour
             return;
         }
 
+        _headTransform = gameObject.transform.FindChild(HeadObjectName);
         var go = GameObject.Instantiate(prefab, Offset, Quaternion.identity) as GameObject;
         go.transform.Rotate(Rotation);
         go.transform.SetParent(_headTransform);

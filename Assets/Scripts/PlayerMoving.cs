@@ -59,10 +59,6 @@ public class PlayerMoving : NetworkBehaviour
         }
     }
 
-    public override void OnStartLocalPlayer()
-    {
-    }
-
     // Update is called once per frame
     void Update ()
     {
