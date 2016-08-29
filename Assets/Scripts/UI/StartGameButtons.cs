@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 public class StartGameButtons : MonoBehaviour {
 
@@ -13,15 +14,17 @@ public class StartGameButtons : MonoBehaviour {
 
     public void OnHost()
     {
-        //_networkManager.StartHost();
+        _networkManager.networkPort = 15678;
         _networkManager.StartHost();
         Application.LoadLevel("PlayerMovementTest");
     }
 
     public void OnConnect()
     {
-        _networkManager.networkAddress = "localhost";
-        _networkManager.networkPort = 7777;
+        _networkManager.networkAddress = GameObject.Find("IpToConnect/Text").GetComponent<Text>().text;
+        if (_networkManager.networkAddress == "")
+            _networkManager.networkAddress = "localhost";
+        _networkManager.networkPort = 15678;
         _networkManager.StartClient();
     }
 }
