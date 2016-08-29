@@ -30,7 +30,10 @@ public class PlayerMoving : NetworkBehaviour
     private GameObject _spawnPoint;
 
     private float _punchCooldown = 0.5f;
+    //private float _deathCooldown = 0.3f;
+
     private float _lastPunchTime = 0f;
+    //private float _lastDeathTime = 0f;
 
     [SerializeField]
     private float _forceValue;
@@ -38,7 +41,6 @@ public class PlayerMoving : NetworkBehaviour
     void Start ()
     {
         // prepare components
-        _cameraMovement = Camera.main.GetComponent<CameraMovement>();
         _rigidBody = GetComponent<Rigidbody>();
         _childAnimator = GetComponentInChildren<Animator>();
         _dustParticleSystem = GetComponentInChildren<ParticleSystem>();
@@ -48,9 +50,11 @@ public class PlayerMoving : NetworkBehaviour
         if (!isLocalPlayer)
             return;
 
+        _cameraMovement = Camera.main.GetComponent<CameraMovement>();
+
         // initialization
         _cameraMovement.SetTarget(gameObject);
-        PlayerToSpawn();
+        CmdPlayerToSpawn();
         _forceValue = DefaultForceValue;
     }
 
@@ -64,8 +68,11 @@ public class PlayerMoving : NetworkBehaviour
         if (!isLocalPlayer)
             return;
 
+        //if (!gameObject.active && Time.time - _lastDeathTime >= _deathCooldown)
+        //    gameObject.SetActive(true);
+
         if (transform.position.y <= -2f)
-            InitiateDeath();
+            CmdInitiateDeath();
 
         var forceVector = new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical")).normalized;
 
@@ -155,12 +162,24 @@ public class PlayerMoving : NetworkBehaviour
     /// <summary>
     /// Actions made after player is killed
     /// </summary>
-    public void InitiateDeath()
+    [Command]
+    public void CmdInitiateDeath()
     {
+        RpcInitiateDeath();
+    }
+
+    [ClientRpc]
+    public void RpcInitiateDeath()
+    {
+        if (!isLocalPlayer)
+            return;
+
+        //_lastDeathTime = Time.time;
         _bloodParticles.transform.position = transform.position + new Vector3(0f, 0.05f, 0f);
         _bloodParticles.Play();
         _lastPunchTime = Time.time - 2 * _punchCooldown;
-        PlayerToSpawn();
+        CmdPlayerToSpawn();
+        //gameObject.SetActive(false);
     }
 
     public void TryFloor()
@@ -183,13 +202,28 @@ public class PlayerMoving : NetworkBehaviour
         }
     }
 
-    public void PlayerToSpawn()
+    [Command]
+    public void CmdPlayerToSpawn()
     {
+        if (!isServer)
+            return;
+
+        RpcPlayerToSpawn();
+    }
+
+    [ClientRpc]
+    public void RpcPlayerToSpawn()
+    {
+        if (!isLocalPlayer)
+            return;
+
         transform.position = _spawnPoint.transform.position;
-        _cameraMovement.SetLastTrackedPosition(transform.position);
+        if (isLocalPlayer)
+            _cameraMovement.SetLastTrackedPosition(transform.position);
 
         _spawnPoint.SendMessage(SpawnPoint.PlayerRespawnMessage);
     }
+
 
     void OnCollisionEnter(Collision col)
     {
@@ -198,7 +232,7 @@ public class PlayerMoving : NetworkBehaviour
             transform.parent = col.transform;
         }
     }
-
+    
     void OnCollisionExit(Collision col)
     {
         if (col.gameObject.CompareTag(Tags.MovingPlatform))
@@ -215,7 +249,7 @@ public class PlayerMoving : NetworkBehaviour
     {
         if (col.gameObject.CompareTag(Tags.Killer))
         {
-            InitiateDeath();
+            CmdInitiateDeath();
         }
 
         if (col.gameObject.CompareTag(Tags.Respawn) && _spawnPoint != col.gameObject)
