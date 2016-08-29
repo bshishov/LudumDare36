@@ -13,7 +13,7 @@ public class EmotionData : ScriptableObject
         public Sprite Sprite;
     }
 
-    public enum EmoticonType
+    public enum EmoticonType : int
     {
         Kappa,
         Leonidas,

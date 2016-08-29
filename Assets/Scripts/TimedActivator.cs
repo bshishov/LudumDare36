@@ -9,7 +9,7 @@ public class TimedActivator : MonoBehaviour
 
     public GameObject[] Targets;
     public bool Loop = true;
-
+    public bool SelfTarget = false;
 
     private float _currentTime = 0f;
     private bool _activated = false;
@@ -45,6 +45,9 @@ public class TimedActivator : MonoBehaviour
         {
             target.SendMessage(methodName);
         }
+
+        if(SelfTarget)
+            gameObject.SendMessage(methodName);
     }
 
     void OnDrawGizmosSelected()

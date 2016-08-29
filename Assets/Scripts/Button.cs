@@ -13,6 +13,7 @@ public class Button : MonoBehaviour
     private float _currentState = 0f;
     private Vector3 _initialPosition;
     private Vector3 _pressedPosition;
+    private AudioSource _audioSource;
 
     public bool IsActivated { get; private set; }
 
@@ -22,7 +23,9 @@ public class Button : MonoBehaviour
 	    _pressedPosition = transform.position + Vector3.down*PressDepth;
         IsActivated = false;
 
-        if(!GetComponent<Collider>().isTrigger)
+        _audioSource = GetComponent<AudioSource>();
+
+        if (!GetComponent<Collider>().isTrigger)
             Debug.LogWarning("Button collider must be a trigger", this);
     }
 	
@@ -50,6 +53,7 @@ public class Button : MonoBehaviour
             if (!IsActivated && _playersTriggered == 1)
             {
                 IsActivated = true;
+                _audioSource.Play();
                 foreach (var target in Targets)
                 {
                     target.SendMessage(ActivatorProxy.ActivateEvent);

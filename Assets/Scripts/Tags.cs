@@ -7,4 +7,5 @@
     public static string Killer = "Killer";
     public static string MovingPlatform = "Moving Platform";
     public static string ForceReducer = "Force Reducer";
+    public static string Chest = "Chest";
 }

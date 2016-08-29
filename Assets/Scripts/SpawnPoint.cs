@@ -8,15 +8,20 @@ public class SpawnPoint : MonoBehaviour
 
     private ParticleSystem _particleSystem;
     private Animator _bannerAnimator;
+    private AudioSource _audioSource;
 
     void Start()
 	{
 	    _particleSystem = GetComponentInChildren<ParticleSystem>();
         _bannerAnimator = GetComponentInChildren<Animator>();
+        _audioSource = GetComponent<AudioSource>();
+
 	}
 
     public void OnPlayerRespawn()
     {
+        if (!_particleSystem.isPlaying)
+            _particleSystem.Play();
         _bannerAnimator.SetTrigger("Respawn");
     }
 
@@ -24,6 +29,8 @@ public class SpawnPoint : MonoBehaviour
     {
         if(!_particleSystem.isPlaying)
             _particleSystem.Play();
+
+        _audioSource.Play();
         _bannerAnimator.SetTrigger("Rotate");
     }
 

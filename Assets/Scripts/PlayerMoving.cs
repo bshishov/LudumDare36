@@ -2,10 +2,10 @@
 using System.Collections;
 using UnityEngine.Networking;
 
+[RequireComponent(typeof(AudioSource))]
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerMoving : NetworkBehaviour
 {
-
     /// <summary>
     /// Applied force multiplier
     /// </summary>
@@ -15,13 +15,14 @@ public class PlayerMoving : NetworkBehaviour
     public float RotationSpeed = 10f;
     public float Speed;
     public float PunchMultiplier = 20f;
+    public AudioClip PushAudio;
 
-    public ParticleSystem BloodParticles;
+    public GameObject BloodParticles;
     
     private Animator _childAnimator;
     private ParticleSystem _dustParticleSystem;
-    private ParticleSystem _bloodParticles;
     private CameraMovement _cameraMovement;
+    private AudioSource _audioSource;
 
     /// <summary>
     /// Ref to player's rigid body
@@ -45,17 +46,17 @@ public class PlayerMoving : NetworkBehaviour
         _childAnimator = GetComponentInChildren<Animator>();
         _dustParticleSystem = GetComponentInChildren<ParticleSystem>();
         _spawnPoint = GameObject.Find("MainSpawn");
-        _bloodParticles = Instantiate(BloodParticles);
+        _audioSource = GetComponent<AudioSource>();
 
-        if (!isLocalPlayer)
-            return;
+        if (isLocalPlayer)
+        {
+            _cameraMovement = Camera.main.GetComponent<CameraMovement>();
 
-        _cameraMovement = Camera.main.GetComponent<CameraMovement>();
-
-        // initialization
-        _cameraMovement.SetTarget(gameObject);
-        CmdPlayerToSpawn();
-        _forceValue = DefaultForceValue;
+            // initialization
+            _cameraMovement.SetTarget(gameObject);
+            CmdPlayerToSpawn();
+            _forceValue = DefaultForceValue;
+        }
     }
 
     public override void OnStartLocalPlayer()
@@ -147,16 +148,17 @@ public class PlayerMoving : NetworkBehaviour
     [Command]
     public void CmdPunch(GameObject target, Vector3 direction)
     {
-        if (!isServer)
-            return;
-
-        target.GetComponent<PlayerMoving>().RpcPushPlayer(direction);
+        if (isServer)
+        {
+            target.GetComponent<PlayerMoving>().RpcPushPlayer(direction);
+        }
     }
 
     [ClientRpc]
     public void RpcPushPlayer(Vector3 direction)
     {
         _rigidBody.AddForce(((direction + new Vector3(0f, 1f, 0f)).normalized) * PunchMultiplier, ForceMode.Impulse);
+        _audioSource.PlayOneShot(PushAudio, 0.8f);
     }
 
     /// <summary>
@@ -171,12 +173,13 @@ public class PlayerMoving : NetworkBehaviour
     [ClientRpc]
     public void RpcInitiateDeath()
     {
-        if (!isLocalPlayer)
-            return;
+     //   if (!isLocalPlayer)
+            //return;
+
+        var _bloodParticles = GameObject.Instantiate(BloodParticles, transform.position + new Vector3(0f, 0.05f, 0f),
+           Quaternion.identity) as GameObject;
 
         //_lastDeathTime = Time.time;
-        _bloodParticles.transform.position = transform.position + new Vector3(0f, 0.05f, 0f);
-        _bloodParticles.Play();
         _lastPunchTime = Time.time - 2 * _punchCooldown;
         CmdPlayerToSpawn();
         //gameObject.SetActive(false);
@@ -205,25 +208,22 @@ public class PlayerMoving : NetworkBehaviour
     [Command]
     public void CmdPlayerToSpawn()
     {
-        if (!isServer)
-            return;
-
-        RpcPlayerToSpawn();
+        if (isServer)
+        {
+            RpcPlayerToSpawn();
+        }
     }
 
     [ClientRpc]
     public void RpcPlayerToSpawn()
     {
-        if (!isLocalPlayer)
-            return;
-
-        transform.position = _spawnPoint.transform.position;
         if (isLocalPlayer)
+        {
+            transform.position = _spawnPoint.transform.position;
             _cameraMovement.SetLastTrackedPosition(transform.position);
-
-        _spawnPoint.SendMessage(SpawnPoint.PlayerRespawnMessage);
+            _spawnPoint.SendMessage(SpawnPoint.PlayerRespawnMessage);
+        }
     }
-
 
     void OnCollisionEnter(Collision col)
     {
@@ -252,15 +252,15 @@ public class PlayerMoving : NetworkBehaviour
             CmdInitiateDeath();
         }
 
-        if (col.gameObject.CompareTag(Tags.Respawn) && _spawnPoint != col.gameObject)
+        if (isLocalPlayer)
         {
-            if (!isLocalPlayer)
-                return;
-
-            if(_spawnPoint != null)
-                _spawnPoint.SendMessage(SpawnPoint.PlayerDeactivateMessage);
-            _spawnPoint = col.gameObject;
-            _spawnPoint.SendMessage(SpawnPoint.PlayerActivateMessage);
+            if (col.gameObject.CompareTag(Tags.Respawn) && _spawnPoint != col.gameObject)
+            {
+                if (_spawnPoint != null)
+                    _spawnPoint.SendMessage(SpawnPoint.PlayerDeactivateMessage);
+                _spawnPoint = col.gameObject;
+                _spawnPoint.SendMessage(SpawnPoint.PlayerActivateMessage);
+            }
         }
     }
 
