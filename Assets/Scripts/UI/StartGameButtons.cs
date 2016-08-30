@@ -13,7 +13,7 @@ public class StartGameButtons : MonoBehaviour {
     NetworkManager _networkManager;
 
     private int _defaultPort = 15678;
-    private string[] levelNames = { "buttons_test", "PlayerMovementTest" };
+    private string[] levelNames = { "level1", "PlayerMovementTest", "buttons_test",  };
 
     public void Start()
     {
@@ -43,7 +43,7 @@ public class StartGameButtons : MonoBehaviour {
             _networkManager.networkAddress = "localhost";
         GetPort(GameObject.Find("ClientPort/Text"));
         _networkManager.StartClient();
-
+        
         PlayerPrefs.SetString("connection_address", _networkManager.networkAddress);
         PlayerPrefs.SetInt("connection_port", _networkManager.networkPort);
 

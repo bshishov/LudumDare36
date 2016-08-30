@@ -27,7 +27,28 @@ public class EmotionHotkeys : NetworkBehaviour
 
 	        if (Input.GetKeyDown(KeyCode.Alpha3))
                 CmdSpawnEmotion((int)EmotionData.EmoticonType.WTF);
-	    }
+
+            if (Input.GetKeyDown(KeyCode.Alpha4))
+                CmdSpawnEmotion((int)EmotionData.EmoticonType.Fuck);
+
+            if (Input.GetKeyDown(KeyCode.Alpha5))
+                CmdSpawnEmotion((int)EmotionData.EmoticonType.NoComments);
+
+            if (Input.GetKeyDown(KeyCode.Alpha6))
+                CmdSpawnEmotion((int)EmotionData.EmoticonType.Love);
+
+            if (Input.GetKeyDown(KeyCode.Alpha7))
+                CmdSpawnEmotion((int)EmotionData.EmoticonType.Oops);
+
+            if (Input.GetKeyDown(KeyCode.Alpha8))
+                CmdSpawnEmotion((int)EmotionData.EmoticonType.Awkward);
+
+            if (Input.GetKeyDown(KeyCode.Alpha9))
+                CmdSpawnEmotion((int)EmotionData.EmoticonType.Question);
+
+            if (Input.GetKeyDown(KeyCode.Alpha0))
+                CmdSpawnEmotion((int)EmotionData.EmoticonType.Angry);
+        }
     }
 
     [Command]

@@ -24,5 +24,20 @@ namespace Assets.Scripts
             ErrorPopup.SetActive(true);
             ProcessingPopup.SetActive(false);
         }
+        
+        /*
+        public override void OnClientConnect(NetworkConnection conn)
+        {
+            //ClientScene.AddPlayer(conn, 0);
+            //ClientScene.AddPlayer(0);
+        }*/
+
+        /*
+        public override void OnServerAddPlayer(NetworkConnection conn, short playerControllerId)
+        {
+            Debug.Log("OnServerAddPlayer");
+            var player = (GameObject)Instantiate(playerPrefab, Vector3.zero, Quaternion.identity);
+            NetworkServer.AddPlayerForConnection(conn, player, playerControllerId);
+        }*/
     }
 }

@@ -16,35 +16,25 @@ public class CustomSpriteRenderer : MonoBehaviour
     //public CustomSpriteRendererType Type = CustomSpriteRendererType.UseQuad;
     public bool BuildOnStart = true;
 
-    void Start ()
-	{
-	    var meshFilter = GetComponent<MeshFilter>();
-	    if (meshFilter.mesh != null)
-	    {
-            Debug.Log("NO MESH FOUND");
-
-            if (BuildOnStart)
-	        {
-                Debug.Log("REBUILD MESH");
-                Rebuild();
-	        }
-	    }
-	}
-	
-	void Update ()
+    void Start()
     {
-	
-	}
+        Rebuild();
+    }
+
+    void Update()
+    {
+
+    }
 
     [ContextMenu("Rebuild")]
     void Rebuild()
     {
-        var meshFilter = GetComponent<MeshFilter>();
-        var mesh = new Mesh();
-        mesh.vertices = Sprite.vertices.Select(v => new Vector3(v.x, v.y, 0)).ToArray();
-        mesh.triangles = Sprite.triangles.Select(v => (int)v).ToArray();
-        mesh.uv = Sprite.uv;
-        meshFilter.mesh = mesh;
+        var uv = new Vector2[4];
+        uv[1] = new Vector2(Sprite.textureRect.xMin / Sprite.texture.width, Sprite.textureRect.yMin / Sprite.texture.height);
+        uv[3] = new Vector2(Sprite.textureRect.xMax / Sprite.texture.width, Sprite.textureRect.yMin / Sprite.texture.height);
+        uv[2] = new Vector2(Sprite.textureRect.xMin / Sprite.texture.width, Sprite.textureRect.yMax / Sprite.texture.height);
+        uv[0] = new Vector2(Sprite.textureRect.xMax / Sprite.texture.width, Sprite.textureRect.yMax / Sprite.texture.height);
+        GetComponent<MeshFilter>().mesh.uv = uv;
 
         var meshRenderer = GetComponent<MeshRenderer>();
         meshRenderer.material.SetTexture("_MainTex", Sprite.texture);

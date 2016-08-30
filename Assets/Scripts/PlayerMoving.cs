@@ -41,22 +41,23 @@ public class PlayerMoving : NetworkBehaviour
 
     void Start ()
     {
+        Debug.Log("PLAYER OnStart");
         // prepare components
         _rigidBody = GetComponent<Rigidbody>();
         _childAnimator = GetComponentInChildren<Animator>();
         _dustParticleSystem = GetComponentInChildren<ParticleSystem>();
         _spawnPoint = GameObject.Find("MainSpawn");
         _audioSource = GetComponent<AudioSource>();
+    }
 
-        if (isLocalPlayer)
-        {
-            _cameraMovement = Camera.main.GetComponent<CameraMovement>();
+    public override void OnStartLocalPlayer()
+    {
+        _cameraMovement = Camera.main.GetComponent<CameraMovement>();
 
-            // initialization
-            _cameraMovement.SetTarget(gameObject);
-            CmdPlayerToSpawn();
-            _forceValue = DefaultForceValue;
-        }
+        // initialization
+        _cameraMovement.SetTarget(gameObject);
+        CmdPlayerToSpawn();
+        _forceValue = DefaultForceValue;
     }
 
     // Update is called once per frame
