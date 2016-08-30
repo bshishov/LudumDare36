@@ -113,8 +113,8 @@ public class PlayerMoving : NetworkBehaviour
             _dustParticleSystem.Stop();
         }
 
-        if (!isLocalPlayer)
-            return;
+        //if (!isLocalPlayer)
+        //    return;
 
         if (velocityMagnitude >= MaximumSpeed)
             return;
