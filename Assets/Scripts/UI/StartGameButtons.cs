@@ -4,13 +4,16 @@ using System.Collections;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 using Assets.Scripts;
+using Assets.Scripts.UI;
 
 public class StartGameButtons : MonoBehaviour {
 
     public GameObject ConnectionProcessingPopup;
     public GameObject LevelsDropDown;
 
-    NetworkManager _networkManager;
+    private GameObject _processingPopup;
+
+    CustomNetworkManager _networkManager;
 
     private int _defaultPort = 15678;
     private string[] levelNames = { "level1", "PlayerMovementTest", "buttons_test",  };
@@ -19,6 +22,7 @@ public class StartGameButtons : MonoBehaviour {
     {
         _networkManager = GameObject.Find("NetworkManager").GetComponent<CustomNetworkManager>();
         _networkManager.networkPort = _defaultPort;
+        _networkManager.offlineScene = "MainMenu";
         GameObject.Find("IpToConnect").GetComponent<InputField>().text = PlayerPrefs.GetString("connection_address", _networkManager.networkAddress);
 
         GameObject.Find(PlayerPrefs.GetString("player_hat")).GetComponent<Toggle>().isOn = true;
@@ -31,6 +35,7 @@ public class StartGameButtons : MonoBehaviour {
         _networkManager.networkAddress = "localhost";
         GetPort(GameObject.Find("ServerPort/Text"));
         _networkManager.onlineScene = levelNames[levelIndex];
+        _networkManager.NetworkingMode = CustomNetworkManager.NetworkingModes.Host;
         _networkManager.StartHost();
 
         PlayerPrefs.SetInt("connection_port", _networkManager.networkPort);
@@ -43,11 +48,13 @@ public class StartGameButtons : MonoBehaviour {
             _networkManager.networkAddress = "localhost";
         GetPort(GameObject.Find("ClientPort/Text"));
         _networkManager.StartClient();
-        
+        _networkManager.NetworkingMode = CustomNetworkManager.NetworkingModes.Client;
+
         PlayerPrefs.SetString("connection_address", _networkManager.networkAddress);
         PlayerPrefs.SetInt("connection_port", _networkManager.networkPort);
 
-        ConnectionProcessingPopup.SetActive(true);
+        _processingPopup = GameObject.Find("Menu").GetComponent<NetworkControllerPopups>().ProcessingPopup;
+        _processingPopup.SetActive(true);
     }
 
     public void OnBack()

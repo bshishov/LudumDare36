@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 using Assets.Scripts;
 
 public class PauseMenuButtons : MonoBehaviour {
@@ -12,6 +11,16 @@ public class PauseMenuButtons : MonoBehaviour {
     public void OnExit()
     {
         Application.LoadLevel("MainMenu");
-        GameObject.Find("NetworkManager").GetComponent<CustomNetworkManager>().StopHost();
+        var networkManager = GameObject.Find("NetworkManager").GetComponent<CustomNetworkManager>();
+        switch (networkManager.NetworkingMode)
+        {
+            case CustomNetworkManager.NetworkingModes.Host:
+                networkManager.StopHost();
+                break;
+            case CustomNetworkManager.NetworkingModes.Client:
+                networkManager.StopClient();
+                break;
+        }
+        networkManager.NetworkingMode = CustomNetworkManager.NetworkingModes.None;
     }
 }

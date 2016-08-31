@@ -1,30 +1,47 @@
-﻿using UnityEngine;
+﻿using Assets.Scripts.UI;
+using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.SceneManagement;
 
 namespace Assets.Scripts
 {
     public class CustomNetworkManager : NetworkManager
     {
-        public GameObject ProcessingPopup;
-        public GameObject ErrorPopup;
+        public enum NetworkingModes
+        {
+            None, Host, Server, Client
+        }
+
+        public NetworkingModes NetworkingMode = NetworkingModes.None;
+
+        private GameObject _errorPopup;
+        private GameObject _processingPopup;
 
         public override void OnClientError(NetworkConnection conn, int errorCode)
         {
             base.OnClientError(conn, errorCode);
             Debug.Log("CLIENT ERROR");
             StopClient();
-            ErrorPopup.SetActive(true);
-            ProcessingPopup.SetActive(false);
+            NetworkingMode = NetworkingModes.None;
+
+            _errorPopup = GameObject.Find("Menu").GetComponent<NetworkControllerPopups>().ErrorPopup;
+            _processingPopup = GameObject.Find("Menu").GetComponent<NetworkControllerPopups>().ProcessingPopup;
+            _errorPopup.SetActive(true);
+            _processingPopup.SetActive(false);
         }
 
         public override void OnClientDisconnect(NetworkConnection conn)
         {
             Debug.Log("CLIENT DISCONNECTED");
             StopClient();
-            ErrorPopup.SetActive(true);
-            ProcessingPopup.SetActive(false);
+            NetworkingMode = NetworkingModes.None;
+
+            _errorPopup = GameObject.Find("Menu").GetComponent<NetworkControllerPopups>().ErrorPopup;
+            _processingPopup = GameObject.Find("Menu").GetComponent<NetworkControllerPopups>().ProcessingPopup;
+            _errorPopup.SetActive(true);
+            _processingPopup.SetActive(false);
         }
-        
+
         /*
         public override void OnClientConnect(NetworkConnection conn)
         {
