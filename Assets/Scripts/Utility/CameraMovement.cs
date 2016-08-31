@@ -1,6 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
-using UnityEngine.Networking;
 
 public class CameraMovement : MonoBehaviour
 {
@@ -11,7 +9,6 @@ public class CameraMovement : MonoBehaviour
 
     private Vector3 _velocity;
     private Vector3 _lastTrackedObjectPosition;
-
 
     void Start ()
     {

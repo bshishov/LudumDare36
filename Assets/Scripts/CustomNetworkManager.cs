@@ -19,7 +19,7 @@ namespace Assets.Scripts
 
         public override void OnClientDisconnect(NetworkConnection conn)
         {
-            Debug.Log("CLIENT STOPPED");
+            Debug.Log("CLIENT DISCONNECTED");
             StopClient();
             ErrorPopup.SetActive(true);
             ProcessingPopup.SetActive(false);

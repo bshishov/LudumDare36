@@ -56,7 +56,10 @@ public class Button : MonoBehaviour
                 _audioSource.Play();
                 foreach (var target in Targets)
                 {
-                    target.SendMessage(ActivatorProxy.ActivateEvent);
+                    if (target != null)
+                    {
+                        target.SendMessage(ActivatorProxy.ActivateEvent);
+                    }
                 }
             }
         }
@@ -73,7 +76,10 @@ public class Button : MonoBehaviour
                 IsActivated = false;
                 foreach (var target in Targets)
                 {
-                    target.SendMessage(ActivatorProxy.DeActivateEvent);
+                    if (target != null)
+                    {
+                        target.SendMessage(ActivatorProxy.DeActivateEvent);
+                    }
                 }
             }
         }

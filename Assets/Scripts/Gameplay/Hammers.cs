@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.Networking;
 
 [RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(AudioSource))]
@@ -15,6 +16,9 @@ public class Hammers : MonoBehaviour
     {
         _audioSource = GetComponent<AudioSource>();
         _animator = GetComponent<Animator>();
+        var networkAnimator = GetComponent<NetworkAnimator>();
+
+        //na.SetParameterAutoSend();
     }
 	
 	void Update ()

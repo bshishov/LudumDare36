@@ -1,48 +1,37 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEngine.Networking;
 
 [RequireComponent(typeof(AudioSource))]
 [RequireComponent(typeof(Rigidbody))]
 public class PlayerMoving : NetworkBehaviour
 {
-    /// <summary>
-    /// Applied force multiplier
-    /// </summary>
+    public bool IsAlive { get; private set; }
+
+    private const float KillingFloorY = -2f;
+    private const float PunchCooldown = 0.5f;
+
     public float DefaultForceValue = 70f;
     public float ForceValueForIce = 0.2f;
     public float MaximumSpeed = 0.05f;
     public float RotationSpeed = 10f;
-    public float Speed;
     public float PunchMultiplier = 20f;
     public AudioClip PushAudio;
-
     public GameObject BloodParticles;
     
     private Animator _childAnimator;
     private ParticleSystem _dustParticleSystem;
     private CameraMovement _cameraMovement;
     private AudioSource _audioSource;
-
-    /// <summary>
-    /// Ref to player's rigid body
-    /// </summary>
     private Rigidbody _rigidBody;
     private GameObject _spawnPoint;
 
-    private float _punchCooldown = 0.5f;
     //private float _deathCooldown = 0.3f;
-
     private float _lastPunchTime = 0f;
     //private float _lastDeathTime = 0f;
-
-    [SerializeField]
     private float _forceValue;
 
     void Start ()
     {
-        Debug.Log("PLAYER OnStart");
-        // prepare components
         _rigidBody = GetComponent<Rigidbody>();
         _childAnimator = GetComponentInChildren<Animator>();
         _dustParticleSystem = GetComponentInChildren<ParticleSystem>();
@@ -53,55 +42,39 @@ public class PlayerMoving : NetworkBehaviour
     public override void OnStartLocalPlayer()
     {
         _cameraMovement = Camera.main.GetComponent<CameraMovement>();
-
-        // initialization
         _cameraMovement.SetTarget(gameObject);
+
         CmdPlayerToSpawn();
         _forceValue = DefaultForceValue;
     }
-
-    // Update is called once per frame
+    
     void Update ()
     {
-        if (!isLocalPlayer)
-            return;
-
-        //if (!gameObject.active && Time.time - _lastDeathTime >= _deathCooldown)
-        //    gameObject.SetActive(true);
-
-        if (transform.position.y <= -2f)
-            CmdInitiateDeath();
-
-        var forceVector = new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical")).normalized;
-
-        if (forceVector.magnitude > 0.01f)
+        if (isLocalPlayer && IsAlive)
         {
-            transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(forceVector.normalized),
-                Time.deltaTime * RotationSpeed);
-        }
-
-        if (Input.GetButtonDown("Jump"))
-        {
-            if (Time.time - _lastPunchTime >= _punchCooldown)
+            if (transform.position.y <= KillingFloorY)
             {
-                _lastPunchTime = Time.time;
-                _childAnimator.SetTrigger("Punch");
+                CmdInitiateDeath();
+            }
 
-                RaycastHit hit;
-                var forward = transform.TransformDirection(Vector3.forward);
-                var initialPosition = transform.position;
-                initialPosition.y = 0.5f;
-                var ray = new Ray(initialPosition, forward);
-                if (Physics.Raycast(ray, out hit, 0.5f))
-                    if (hit.collider != null && hit.collider.gameObject.CompareTag(Tags.Player))
-                        CmdPunch(hit.collider.gameObject, forward);
+            var forceVector = new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical")).normalized;
+
+            if (forceVector.magnitude > 0.01f)
+            {
+                transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(forceVector.normalized),
+                    Time.deltaTime*RotationSpeed);
+            }
+
+            if (Input.GetButtonDown("Jump"))
+            {
+                CmdPunch();
             }
         }
     }
 
     void FixedUpdate()
     {
-        var velocityMagnitude = Speed = _rigidBody.velocity.magnitude;
+        var velocityMagnitude = new Vector3(_rigidBody.velocity.x, 0, _rigidBody.velocity.z).magnitude;
         _childAnimator.SetFloat("Speed", velocityMagnitude);
 
         if (!_dustParticleSystem.isPlaying && velocityMagnitude > 0.1f)
@@ -119,9 +92,12 @@ public class PlayerMoving : NetworkBehaviour
         if (velocityMagnitude >= MaximumSpeed)
             return;
 
-        var forceVector = new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical")).normalized;
-        forceVector *= _forceValue * Time.deltaTime;
-        _rigidBody.AddForce(forceVector, ForceMode.Impulse);
+        if (isLocalPlayer)
+        {
+            var forceVector = new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical")).normalized;
+            forceVector *= _forceValue*Time.deltaTime;
+            _rigidBody.AddForce(forceVector, ForceMode.Impulse);
+        }
 
         // setting animation speed
         if (_forceValue == ForceValueForIce)
@@ -137,18 +113,37 @@ public class PlayerMoving : NetworkBehaviour
 
         TryFloor();
     }
-
+    
     /// <summary>
-    /// Getting a punch from any other object
+    /// Punch command
     /// </summary>
-    /// <param name="direction"></param>
     [Command]
-    public void CmdPunch(GameObject target, Vector3 direction)
+    public void CmdPunch()
     {
-        if (isServer)
+        if (Time.time - _lastPunchTime >= PunchCooldown)
         {
-            target.GetComponent<PlayerMoving>().RpcPushPlayer(direction);
+            _lastPunchTime = Time.time;
+            RpcPlayPunchAnimation(); // Play animation on this player
+
+            RaycastHit hit;
+            var forward = transform.TransformDirection(Vector3.forward);
+            var initialPosition = transform.position;
+            initialPosition.y = 0.5f;
+            var ray = new Ray(initialPosition, forward);
+            if (Physics.Raycast(ray, out hit, 0.5f))
+            {
+                if (hit.collider != null && hit.collider.gameObject.CompareTag(Tags.Player))
+                {
+                    hit.collider.gameObject.GetComponent<PlayerMoving>().RpcPushPlayer(forward);
+                }
+            }
         }
+    }
+
+    [ClientRpc]
+    public void RpcPlayPunchAnimation()
+    {
+        _childAnimator.SetTrigger("Punch");
     }
 
     [ClientRpc]
@@ -158,9 +153,6 @@ public class PlayerMoving : NetworkBehaviour
         _audioSource.PlayOneShot(PushAudio, 0.8f);
     }
 
-    /// <summary>
-    /// Actions made after player is killed
-    /// </summary>
     [Command]
     public void CmdInitiateDeath()
     {
@@ -170,16 +162,12 @@ public class PlayerMoving : NetworkBehaviour
     [ClientRpc]
     public void RpcInitiateDeath()
     {
-     //   if (!isLocalPlayer)
-            //return;
-
-        var _bloodParticles = GameObject.Instantiate(BloodParticles, transform.position + new Vector3(0f, 0.05f, 0f),
-           Quaternion.identity) as GameObject;
+        IsAlive = false;
+        Instantiate(BloodParticles, transform.position + new Vector3(0f, 0.05f, 0f), Quaternion.identity);
 
         //_lastDeathTime = Time.time;
-        _lastPunchTime = Time.time - 2 * _punchCooldown;
+        _lastPunchTime = Time.time - 2 * PunchCooldown;
         CmdPlayerToSpawn();
-        //gameObject.SetActive(false);
     }
 
     public void TryFloor()
@@ -205,10 +193,7 @@ public class PlayerMoving : NetworkBehaviour
     [Command]
     public void CmdPlayerToSpawn()
     {
-        if (isServer)
-        {
-            RpcPlayerToSpawn();
-        }
+        RpcPlayerToSpawn();
     }
 
     [ClientRpc]
@@ -220,6 +205,7 @@ public class PlayerMoving : NetworkBehaviour
             _cameraMovement.SetLastTrackedPosition(transform.position);
             _spawnPoint.SendMessage(SpawnPoint.PlayerRespawnMessage);
         }
+        IsAlive = true;
     }
 
     void OnCollisionEnter(Collision col)
@@ -244,9 +230,12 @@ public class PlayerMoving : NetworkBehaviour
 
     void OnTriggerEnter(Collider col)
     {
-        if (col.gameObject.CompareTag(Tags.Killer))
+        if (isServer)
         {
-            CmdInitiateDeath();
+            if (col.gameObject.CompareTag(Tags.Killer))
+            {
+                CmdInitiateDeath();
+            }
         }
 
         if (isLocalPlayer)
