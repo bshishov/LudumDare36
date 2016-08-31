@@ -43,7 +43,8 @@ public class TimedActivator : MonoBehaviour
     {
         foreach (var target in Targets)
         {
-            target.SendMessage(methodName);
+            if(target != null)
+                target.SendMessage(methodName);
         }
 
         if(SelfTarget)
