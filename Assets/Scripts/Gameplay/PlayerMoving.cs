@@ -202,7 +202,6 @@ public class PlayerMoving : NetworkBehaviour
         if (isLocalPlayer)
         {
             transform.position = _spawnPoint.transform.position;
-            _cameraMovement.SetLastTrackedPosition(transform.position);
             _spawnPoint.SendMessage(SpawnPoint.PlayerRespawnMessage);
         }
         IsAlive = true;
