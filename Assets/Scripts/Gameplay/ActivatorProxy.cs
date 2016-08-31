@@ -44,7 +44,6 @@ public class ActivatorProxy : NetworkBehaviour
             if (_counter == 1)
             {
                 RpcActivate();
-                gameObject.SendMessage(ProxyActivateEvent, SendMessageOptions.DontRequireReceiver);
             }
         }
     }
@@ -66,13 +65,15 @@ public class ActivatorProxy : NetworkBehaviour
             }
         }
     }
-
+    
+    [ClientRpc]
     void RpcActivate()
     {
         IsActivated = true;
         gameObject.SendMessage(ProxyActivateEvent, SendMessageOptions.DontRequireReceiver);
     }
 
+    [ClientRpc]
     void RpcDeactivate()
     {
         IsActivated = false;

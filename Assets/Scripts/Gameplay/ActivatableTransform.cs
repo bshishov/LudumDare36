@@ -12,10 +12,14 @@ public class ActivatableTransform : MonoBehaviour
     private Vector3 _initialPosition;
     private Vector3 _targedPosition;
 
-    void Start ()
+    void Awake()
     {
         _initialPosition = transform.position;
         _targedPosition = _initialPosition + DeltaPosition;
+    }
+
+    void Start ()
+    {
         _activator = GetComponent<ActivatorProxy>();
     }
 	
