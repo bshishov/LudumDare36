@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
+using UnityEditor;
 
 public class ActivatorProxy : NetworkBehaviour
 {
@@ -9,12 +10,28 @@ public class ActivatorProxy : NetworkBehaviour
     public static string ProxyDeActivateEvent = "OnProxyDeactivate";
 
     public bool IsActivated { get; private set; }
-    public float Delay = 0f;
 
-    [SerializeField]
+    public bool HoldActivation = true;
+    public bool Inverted = false;
+    public float TimeBeforeActivationMessage;
+    public float TimeBeforeDeactivationMessage;
+
+#if UNITY_EDITOR
+    [SerializeField][ShowOnly]
+#endif
     private int _counter = 0;
     private float _deactivatingTime;
     private bool _deactivationPending;
+    private bool _activationPending;
+    private float _activationTime;
+
+    void Start()
+    {
+        if (Inverted)
+        {
+            RpcDeactivate();
+        }
+    }
 
     void Update()
     {
@@ -24,7 +41,12 @@ public class ActivatorProxy : NetworkBehaviour
             {
                 RpcDeactivate();
                 _deactivationPending = false;
-                _counter = 0;
+            }
+
+            if (_activationPending && Time.time > _activationTime)
+            {
+                RpcActivate();
+                _activationPending = false;
             }
         }
     }
@@ -34,16 +56,28 @@ public class ActivatorProxy : NetworkBehaviour
     {
         if (isServer)
         {
-            if (_deactivationPending)
+            if (HoldActivation)
             {
-                _deactivationPending = false;
-                _counter = 0;
-            }
+                _counter++;
 
-            _counter++;
-            if (_counter == 1)
+                if (_deactivationPending)
+                    _deactivationPending = false;
+
+                if (_counter == 1)
+                {
+                    if (!_activationPending)
+                    {
+                        _activationPending = true;
+                        _activationTime = Time.time + TimeBeforeActivationMessage;
+                    }
+                }
+            }
+            else if (!_activationPending && !_deactivationPending)
             {
-                RpcActivate();
+                _activationPending = true;
+                _activationTime = Time.time + TimeBeforeActivationMessage;
+                _deactivationPending = true;
+                _deactivatingTime = Mathf.Max(_activationTime, Time.time) + TimeBeforeDeactivationMessage;
             }
         }
     }
@@ -51,32 +85,47 @@ public class ActivatorProxy : NetworkBehaviour
     // Coming from SendMessage
     void OnDeactivate()
     {
-        if (isServer)
+        if (isServer && HoldActivation)
         {
-            // if last activator
-            if (_counter == 1)
+            _counter--;
+            if (_counter < 0)
+                _counter = 0;
+
+            if (_counter == 0)
             {
                 _deactivationPending = true;
-                _deactivatingTime = Time.time + Delay;
-            }
-            else
-            {
-                _counter--;
+                _deactivatingTime = Mathf.Max(_activationTime, Time.time) + TimeBeforeDeactivationMessage;
             }
         }
     }
-    
+
     [ClientRpc]
     void RpcActivate()
     {
-        IsActivated = true;
-        gameObject.SendMessage(ProxyActivateEvent, SendMessageOptions.DontRequireReceiver);
+        if (!Inverted)
+        {
+            IsActivated = true;
+            gameObject.SendMessage(ProxyActivateEvent, SendMessageOptions.DontRequireReceiver);
+        }
+        else
+        {
+            IsActivated = false;
+            gameObject.SendMessage(ProxyDeActivateEvent, SendMessageOptions.DontRequireReceiver);
+        }
     }
 
     [ClientRpc]
     void RpcDeactivate()
     {
-        IsActivated = false;
-        gameObject.SendMessage(ProxyDeActivateEvent, SendMessageOptions.DontRequireReceiver);
+        if (!Inverted)
+        {
+            IsActivated = false;
+            gameObject.SendMessage(ProxyDeActivateEvent, SendMessageOptions.DontRequireReceiver);
+        }
+        else
+        {
+            IsActivated = true;
+            gameObject.SendMessage(ProxyActivateEvent, SendMessageOptions.DontRequireReceiver);
+        }
     }
 }

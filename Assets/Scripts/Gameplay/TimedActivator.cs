@@ -4,8 +4,9 @@ using System.Collections;
 public class TimedActivator : MonoBehaviour
 {
     public float TimeOffset = 0f;
-    public float ActivateDelay = 1f;
-    public float DeactivateDelay = 1f;
+    public float ActivateAtTime = 1f;
+    public float DeactivateAtTime = 2f;
+    public float TotalDuration = 4f;
 
     public GameObject[] Targets;
     public bool Loop = true;
@@ -17,26 +18,31 @@ public class TimedActivator : MonoBehaviour
     void Start ()
     {
         _currentTime = TimeOffset;
+        if (DeactivateAtTime < ActivateAtTime)
+            Debug.LogWarning("DeactivateAtTime time must be more than ActivateAtTime");
+
+        if (DeactivateAtTime > TotalDuration)
+            Debug.LogWarning("Duration must be more than DeactivateAtTime");
     }
 	
 	void Update ()
 	{
 	    _currentTime += Time.deltaTime;
 
-	    if (!_activated && _currentTime > ActivateDelay && _currentTime < ActivateDelay + DeactivateDelay)
+	    if (!_activated && _currentTime > ActivateAtTime && _currentTime < DeactivateAtTime)
 	    {
 	        _activated = true;
             Emit(ActivatorProxy.ActivateEvent);
 	    }
 
-	    if (_activated && _currentTime > ActivateDelay + DeactivateDelay)
+	    if (_activated && _currentTime > DeactivateAtTime)
 	    {
 	        _activated = false;
             Emit(ActivatorProxy.DeActivateEvent);
-
-            if (Loop)
-	            _currentTime = 0f;
 	    }
+
+	    if (_currentTime > TotalDuration && Loop)
+	        _currentTime = 0;
 	}
 
     void Emit(string methodName)
