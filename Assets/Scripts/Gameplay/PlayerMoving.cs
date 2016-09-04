@@ -219,7 +219,9 @@ public class PlayerMoving : NetworkBehaviour
     {
         if (col.gameObject.CompareTag(Tags.MovingPlatform))
         {
-            transform.parent = null;
+            // If leaving same object
+            if(transform.parent == col.gameObject.transform)
+                transform.parent = null;
         }
     }
 

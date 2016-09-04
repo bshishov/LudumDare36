@@ -16,7 +16,7 @@ public class StartGameButtons : MonoBehaviour {
     CustomNetworkManager _networkManager;
 
     private int _defaultPort = 15678;
-    private string[] levelNames = { "level1", "level2", "PlayerMovementTest", "buttons_test",  };
+    private string[] levelNames = { "level1", "level2", "PlayerMovementTest", "test",  };
 
     public void Start()
     {

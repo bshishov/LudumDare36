@@ -1,6 +1,9 @@
 ﻿using UnityEngine;
 using UnityEngine.Networking;
+
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 
 public class ActivatorProxy : NetworkBehaviour
 {
