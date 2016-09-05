@@ -17,13 +17,13 @@ public class PathEditor : Editor
         {
             EditorGUI.BeginChangeCheck();
             
-            var position = t.GetWaypointPoisition(i);
+            var position = t.Waypoints[i].Position;
             var handledPosition = Handles.PositionHandle(position, Quaternion.identity);
 
             if (EditorGUI.EndChangeCheck())
             {
                 Undo.RecordObject(target, "Changed waypoint Target");
-                t.SetWaypointPoisition(i, handledPosition);
+                t.Waypoints[i].Position = handledPosition;
             }
         }
     }

@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections;
 using System.Linq;
 using UnityEngine.Networking;
+
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -34,30 +35,21 @@ public class PathMover : NetworkBehaviour
     [SerializeField]
     [ShowOnly]
 #endif
-    [SyncVar(hook = "OnStepSync")] private int _step = 0;
+    private int _step = 0;
 
 #if UNITY_EDITOR
     [SerializeField]
     [ShowOnly]
 #endif
-    //[SyncVar]
     private float _stepState = 0f;
 
     private Waypoint _initial;
-    private Waypoint _last;
-    private Waypoint _target;
     private float _departingTime;
     private IStatefullMovement<Waypoint> _movement;
 
     void Awake()
     {
-        _initial = new Waypoint { Position = transform.position, WaitTime = StartPointWaitTime };}
-
-    void Start()
-    {
-        _last = _initial;
-        _target = Waypoints[0];
-        _departingTime = Time.time + _last.WaitTime;
+        _initial = new Waypoint { Position = transform.position, WaitTime = StartPointWaitTime };
 
         var allWaypoints = new[] { _initial }.Concat(Waypoints).ToArray();
 
@@ -74,67 +66,50 @@ public class PathMover : NetworkBehaviour
                 _movement = new OnceMovement<Waypoint>(allWaypoints);
                 break;
         }
+        
+        _departingTime = Time.time + _movement.Current.WaitTime;
+    }
+
+    void Start()
+    {
     }
 
     void Update()
     {
         if (Time.time > _departingTime)
         {
-            _stepState += Time.deltaTime * (Speed / (_target.Position - _last.Position).magnitude);
-
+            _stepState += Time.deltaTime * (Speed / (_movement.Current.Position - _movement.Next.Position).magnitude);
             
             if (_stepState > 1f)
             {
-                transform.position = Vector3.Lerp(_last.Position, _target.Position, 1f);
+                transform.position = Vector3.Lerp(_movement.Current.Position, _movement.Next.Position, 1f);
 
                 if (isServer)
                 {
-                    _last = _target;
-                    _target = _movement.GetNext();
-                    _departingTime = Time.time + _last.WaitTime;
+                    _movement.DoStep();
+                    _departingTime = Time.time + _movement.Current.WaitTime;
                     _stepState = 0;
-                    _step = _movement.Step;
+                    _step = _movement.StepIndex;
+                    RpcStepChanged(_step);
                 }
             }
             else
             {
-                transform.position = Vector3.Lerp(_last.Position, _target.Position, _stepState);
+                transform.position = Vector3.Lerp(_movement.Current.Position, _movement.Next.Position, _stepState);
             }
         }
     }
 
-    void OnStepSync(int step)
+    [ClientRpc]
+    void RpcStepChanged(int newStep)
     {
         if (!isServer)
         {
-            Debug.LogFormat("{0} STEP SYNC = {1}", gameObject.name, step);
-            _movement.SetStep(step);
-            _step = step;
+            _movement.SetStep(newStep);
+            _step = newStep;
             _stepState = 0f;
-            _last = _movement.Current;
-            _target = _movement.Next;
-            _departingTime = Time.time + _last.WaitTime;
+            _departingTime = Time.time + _movement.Current.WaitTime - Network.GetAveragePing(Network.player) / 1000f;
         }
-    }
-
-    public Vector3 GetWaypointPoisition(int index)
-    {
-        return Waypoints[index].Position;
-    }
-    
-    public Vector3 GetWaypointPoisition(Waypoint waypoint)
-    {
-        return waypoint.Position;
-    }
-
-    public void SetWaypointPoisition(int index, Vector3 position)
-    {
-        Waypoints[index].Position = position;
-    }
-    
-    public void SetWaypointPoisition(Waypoint waypoint, Vector3 position)
-    {
-        waypoint.Position = position;
     }
 
     void OnDrawGizmosSelected()
@@ -153,19 +128,17 @@ public class PathMover : NetworkBehaviour
 
         foreach (var waypoint in Waypoints)
         {
-            var position = GetWaypointPoisition(waypoint);
-
             if (meshFilter != null)
             {
-                Gizmos.DrawWireMesh(meshFilter.sharedMesh, position, transform.rotation, transform.localScale);
+                Gizmos.DrawWireMesh(meshFilter.sharedMesh, waypoint.Position, transform.rotation, transform.localScale);
             }
 
             //Vector3 pos = Handles.FreeMoveHandle(position, Quaternion.identity, .5f, new Vector3(.5f, .5f, .5f), Handles.RectangleCap);
             //Handles.PositionHandle(position, Quaternion.identity);
-            Gizmos.DrawLine(lastPoint, position);
-            lastPoint = position;
+            Gizmos.DrawLine(lastPoint, waypoint.Position);
+            lastPoint = waypoint.Position;
 #if UNITY_EDITOR
-            Handles.Label(position, "Wait: " + waypoint.WaitTime, GUIStyle.none);
+            Handles.Label(waypoint.Position, "Wait: " + waypoint.WaitTime, GUIStyle.none);
 #endif
         }
 
@@ -182,15 +155,15 @@ public class PathMover : NetworkBehaviour
     {
         T Current { get; }
         T Next { get; }
-        T GetNext();
-        int Step { get; }
+        T DoStep();
+        int StepIndex { get; }
         void Reset();
         void SetStep(int step);
     }
 
     public class LoopMovement<T> : IStatefullMovement<T>
     {
-        public int Step { get { return _index; } }
+        public int StepIndex { get { return _index; } }
         public T Current { get { return _data[_index]; } }
         public T Next { get { return _data[GetNextIndex()]; } }
 
@@ -202,7 +175,7 @@ public class PathMover : NetworkBehaviour
             _data = data;
         }
 
-        public T GetNext()
+        public T DoStep()
         {
             _index = GetNextIndex();
             return _data[_index];
@@ -228,7 +201,7 @@ public class PathMover : NetworkBehaviour
 
     public class OnceMovement<T> : IStatefullMovement<T>
     {
-        public int Step { get { return _index; } }
+        public int StepIndex { get { return _index; } }
         public T Current { get { return _data[_index]; } }
         public T Next{ get { return _data[GetNextIndex()]; } }
 
@@ -240,7 +213,7 @@ public class PathMover : NetworkBehaviour
             _data = data;
         }
 
-        public T GetNext()
+        public T DoStep()
         {
             return _data[GetNextIndex()];
         }
@@ -268,7 +241,7 @@ public class PathMover : NetworkBehaviour
         public T Current { get { return _data[_index]; } }
         public T Next { get { return _data[GetNextIndex()]; } }
 
-        public int Step
+        public int StepIndex
         {
             get
             {
@@ -291,7 +264,7 @@ public class PathMover : NetworkBehaviour
             _data = data;
         }
 
-        public T GetNext()
+        public T DoStep()
         {
             if (_direction)
             {
@@ -351,7 +324,10 @@ public class PathMover : NetworkBehaviour
                 _index = (_data.Length - 1) + _data.Length - step - 1;
             }
             else
+            {
+                _direction = true;
                 _index = step;
+            }
         }
     }
 }
