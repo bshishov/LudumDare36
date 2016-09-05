@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 using Assets.Scripts;
@@ -10,13 +12,13 @@ public class StartGameButtons : MonoBehaviour {
 
     public GameObject ConnectionProcessingPopup;
     public GameObject LevelsDropDown;
+    public LevelPack[] LevelPacks;
 
+    private List<LevelPack.LevelData> _levels = new List<LevelPack.LevelData>();
     private GameObject _processingPopup;
+    private CustomNetworkManager _networkManager;
 
-    CustomNetworkManager _networkManager;
-
-    private int _defaultPort = 15678;
-    private string[] levelNames = { "level1", "level2", "PlayerMovementTest", "test",  };
+    private static int _defaultPort = 15678;
 
     public void Start()
     {
@@ -26,15 +28,35 @@ public class StartGameButtons : MonoBehaviour {
         GameObject.Find("IpToConnect").GetComponent<InputField>().text = PlayerPrefs.GetString("connection_address", _networkManager.networkAddress);
 
         GameObject.Find(PlayerPrefs.GetString("player_hat")).GetComponent<Toggle>().isOn = true;
+
+        var dropDown = LevelsDropDown.GetComponent<Dropdown>();
+        var options = new List<Dropdown.OptionData>();
+
+        foreach (var levelPack in LevelPacks)
+        {
+            foreach (var level in levelPack.Levels)
+            {
+                _levels.Add(level);
+                options.Add(new Dropdown.OptionData(string.Format("[{0}] {1}", levelPack.Name, level.Name), level.Thumbnail));
+            }
+        }
+
+        dropDown.AddOptions(options);
     }
 
     public void OnHost()
     {
-        var levelIndex = LevelsDropDown.GetComponent<Dropdown>().value;
+        var dropdownValue = LevelsDropDown.GetComponent<Dropdown>().value;
 
         _networkManager.networkAddress = "localhost";
         GetPort(GameObject.Find("ServerPort/Text"));
-        _networkManager.onlineScene = levelNames[levelIndex];
+
+        var sceneName = _levels[dropdownValue].SceneName;
+
+        if (string.IsNullOrEmpty(sceneName))
+            Debug.LogErrorFormat("No such level for dropdown value = {0}", dropdownValue);
+
+        _networkManager.onlineScene = sceneName;
         _networkManager.NetworkingMode = CustomNetworkManager.NetworkingModes.Host;
         _networkManager.StartHost();
 
