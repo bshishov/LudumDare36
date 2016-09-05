@@ -11,6 +11,7 @@ public class HatsData : ScriptableObject
     {
         public string Name;
         public GameObject Prefab;
+        public Sprite Icon;
     }
 
     [SerializeField]

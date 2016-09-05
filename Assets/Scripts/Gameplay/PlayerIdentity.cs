@@ -3,11 +3,11 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.Networking;
 
-public class PlayerIdentity : NetworkBehaviour
+public class PlayerIdentity : MonoBehaviour
 {
-    public string Name { get { return _name; } }
-    public string HatName { get { return _hatName; } }
-    public Color Color { get { return _color; } }
+    public string Name { get; private set; }
+    public string HatName { get; private set; }
+    public Color Color { get; private set; }
 
     public HatsData Hats;
     public Vector3 Offset = Vector3.up;
@@ -15,85 +15,111 @@ public class PlayerIdentity : NetworkBehaviour
     public string HeadObjectName = "";
 
     private Transform _headTransform;
-
-    // sync only server => client
-    [SyncVar] private string _hatName;
-    [SyncVar] private Color _color;
-    [SyncVar] private string _name;
-
     private readonly string _defaultHat = String.Empty;
     private Color _defaultColor = Color.white;
     private readonly string _defaultName = "Unnamed";
+    private GameObject _hatObject;
 
-    void Start ()
+    void Awake()
+    {
+        HatName = _defaultHat;
+        Name = _defaultName;
+        Color = _defaultColor;
+    }
+
+    void Start()
 	{
 	    if (string.IsNullOrEmpty(HeadObjectName))
             _headTransform = gameObject.transform;
 	    else
             _headTransform = gameObject.transform.FindChild(HeadObjectName);
 
-        ApplyIdentity();
-    }
-
-    public override void OnStartClient()
-    {
-    }
-    
-    public override void OnStartLocalPlayer()
-    {
-        // say to all that you have a hat over here
-        _hatName = PlayerPrefs.GetString("player_hat", _defaultHat);
-        _color = new Color(
-            PlayerPrefs.GetFloat("player_color_r", _defaultColor.r), 
-            PlayerPrefs.GetFloat("player_color_g", _defaultColor.g), 
-            PlayerPrefs.GetFloat("player_color_b", _defaultColor.b));
-        _name = PlayerPrefs.GetString("player_name", _defaultName);
-        CmdSetIdentity(_name, _color, _hatName);
-    }
-
-    [Command]
-    void CmdSetIdentity(string name, Color color, string hat)
-    {
-        // send to all that this guy has a hat
-        RpcSetIdentity(name, color, hat);
-    }
-
-    [ClientRpc]
-    void RpcSetIdentity(string name, Color color, string hat)
-    {
-        if (!isLocalPlayer)
+        if (gameObject.name == "Dummy")
         {
-            _name = name;
-            _color = color;
-            _hatName = hat;
-            ApplyIdentity();
+            SetFromPlayerPrefs();
         }
     }
 
-    void ApplyIdentity()
+    public void SetHat(string hatName)
     {
-        Debug.LogFormat("Applying identity name={0} hat={1} color={2}", _name, _hatName, _color);
-
-        var meshRenderer = GetComponentInChildren<SkinnedMeshRenderer>();
-        if (meshRenderer != null)
+        if (!string.IsNullOrEmpty(hatName))
         {
-            meshRenderer.material.color = _color;
-        }
-
-        if (!string.IsNullOrEmpty(_hatName))
-        {
-            var hat = Hats.GetHat(_hatName);
+            var hat = Hats.GetHat(hatName);
             if (hat.Prefab == null)
             {
-                Debug.LogWarningFormat("HAT {0} NOT FOUND", _hatName);
+                Debug.LogWarningFormat("HAT {0} NOT FOUND", hatName);
                 return;
             }
 
+            HatName = hatName;
+
             _headTransform = gameObject.transform.FindChild(HeadObjectName);
-            var go = GameObject.Instantiate(hat.Prefab, Vector3.zero, Quaternion.identity) as GameObject;
-            go.transform.Rotate(Rotation + hat.Prefab.transform.localEulerAngles);
-            go.transform.SetParent(_headTransform);
-            go.transform.localPosition = Offset + hat.Prefab.transform.position;
+
+            if(_hatObject != null)
+                Destroy(_hatObject);
+
+            _hatObject = GameObject.Instantiate(hat.Prefab, Vector3.zero, Quaternion.identity) as GameObject;
+            _hatObject.transform.SetParent(_headTransform);
+            _hatObject.transform.Rotate(_headTransform.rotation.eulerAngles + Rotation + hat.Prefab.transform.localEulerAngles);
+            _hatObject.transform.localPosition = Offset + hat.Prefab.transform.position;
         }
+    }
+
+    public void SetColor(Color color)
+    {
+        Color = color;
+        var meshRenderer = GetComponentInChildren<SkinnedMeshRenderer>();
+        if (meshRenderer != null)
+            meshRenderer.material.color = color;
+    }
+
+    public void SetColor(string colorName)
+    {
+        switch (colorName.ToLowerInvariant())
+        {
+            case "white":
+                SetColor(Color.white);
+                break;
+            case "blue":
+                SetColor(Color.blue);
+                break;
+            case "red":
+                SetColor(Color.red);
+                break;
+            case "black":
+                SetColor(Color.black);
+                break;
+            case "random":
+                SetColor(UnityEngine.Random.ColorHSV());
+                break;
+        }
+    }
+
+    public void SetName(string playerName)
+    {
+        if(string.IsNullOrEmpty(playerName))
+            Debug.LogWarning("TRYING TO SET AN EMPTY NAME");
+
+        Name = playerName;
+    }
+
+    public void SetFromPlayerPrefs()
+    {
+        SetHat(PlayerPrefs.GetString("player_hat", _defaultHat));
+        SetColor(new Color(
+            PlayerPrefs.GetFloat("player_color_r", _defaultColor.r),
+            PlayerPrefs.GetFloat("player_color_g", _defaultColor.g),
+            PlayerPrefs.GetFloat("player_color_b", _defaultColor.b))
+            );
+        SetName(PlayerPrefs.GetString("player_name", _defaultName));
+    }
+
+    public void SaveToPlayerPrefs()
+    {
+        PlayerPrefs.SetString("player_hat", HatName);
+        PlayerPrefs.SetString("player_name", Name);
+        PlayerPrefs.SetFloat("player_color_r", Color.r);
+        PlayerPrefs.SetFloat("player_color_g", Color.g);
+        PlayerPrefs.SetFloat("player_color_b", Color.b);
     }
 }
