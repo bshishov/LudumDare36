@@ -77,7 +77,6 @@ public class PlayerIdentity : NetworkBehaviour
         var meshRenderer = GetComponentInChildren<SkinnedMeshRenderer>();
         if (meshRenderer != null)
         {
-            Debug.Log("Setting color");
             meshRenderer.material.color = _color;
         }
 
