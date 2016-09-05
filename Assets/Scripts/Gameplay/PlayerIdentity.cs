@@ -83,18 +83,18 @@ public class PlayerIdentity : NetworkBehaviour
 
         if (!string.IsNullOrEmpty(_hatName))
         {
-            var prefab = Hats.GetPrefab(_hatName);
-            if (prefab == null)
+            var hat = Hats.GetHat(_hatName);
+            if (hat.Prefab == null)
             {
                 Debug.LogWarningFormat("HAT {0} NOT FOUND", _hatName);
                 return;
             }
 
             _headTransform = gameObject.transform.FindChild(HeadObjectName);
-            var go = GameObject.Instantiate(prefab, Offset, Quaternion.identity) as GameObject;
-            go.transform.Rotate(Rotation);
+            var go = GameObject.Instantiate(hat.Prefab, Vector3.zero, Quaternion.identity) as GameObject;
+            go.transform.Rotate(Rotation + hat.Prefab.transform.localEulerAngles);
             go.transform.SetParent(_headTransform);
-            go.transform.localPosition = Vector3.zero;
+            go.transform.localPosition = Offset + hat.Prefab.transform.position;
         }
     }
 }

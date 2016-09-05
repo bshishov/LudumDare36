@@ -2,6 +2,7 @@
 
 public class SpawnPoint : MonoBehaviour
 {
+    public static string MainSpawnName = "MainSpawn";
     public static string PlayerActivateMessage = "OnPlayerActivate";
     public static string PlayerDeactivateMessage = "OnPlayerDeactivate";
     public static string PlayerRespawnMessage = "OnPlayerRespawn";
@@ -15,14 +16,15 @@ public class SpawnPoint : MonoBehaviour
 	    _particleSystem = GetComponentInChildren<ParticleSystem>();
         _bannerAnimator = GetComponentInChildren<Animator>();
         _audioSource = GetComponent<AudioSource>();
-
 	}
 
     public void OnPlayerRespawn()
     {
         if (!_particleSystem.isPlaying)
             _particleSystem.Play();
-        _bannerAnimator.SetTrigger("Respawn");
+
+        if(_bannerAnimator != null)
+            _bannerAnimator.SetTrigger("Respawn");
     }
 
     public void OnPlayerActivate()
@@ -30,8 +32,11 @@ public class SpawnPoint : MonoBehaviour
         if(!_particleSystem.isPlaying)
             _particleSystem.Play();
 
-        _audioSource.Play();
-        _bannerAnimator.SetTrigger("Rotate");
+        if(_audioSource != null)
+            _audioSource.Play();
+
+        if (_bannerAnimator != null)
+            _bannerAnimator.SetTrigger("Rotate");
     }
 
     public void OnPlayerDeactivate()

@@ -20,4 +20,9 @@ public class HatsData : ScriptableObject
     {
         return Hats.FirstOrDefault(h => h.Name == name).Prefab;
     }
+
+    public Hat GetHat(string name)
+    {
+        return Hats.FirstOrDefault(h => h.Name == name);
+    }
 }

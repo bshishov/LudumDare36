@@ -35,17 +35,16 @@ public class PlayerMoving : NetworkBehaviour
         _rigidBody = GetComponent<Rigidbody>();
         _childAnimator = GetComponentInChildren<Animator>();
         _dustParticleSystem = GetComponentInChildren<ParticleSystem>();
-        _spawnPoint = GameObject.Find("MainSpawn");
         _audioSource = GetComponent<AudioSource>();
+        _spawnPoint = GameObject.Find(SpawnPoint.MainSpawnName);
     }
 
     public override void OnStartLocalPlayer()
     {
         _cameraMovement = Camera.main.GetComponent<CameraMovement>();
         _cameraMovement.SetTarget(gameObject);
-
-        CmdPlayerToSpawn();
         _forceValue = DefaultForceValue;
+        CmdPlayerToSpawn();
     }
     
     void Update ()
@@ -92,7 +91,7 @@ public class PlayerMoving : NetworkBehaviour
         if (velocityMagnitude >= MaximumSpeed)
             return;
 
-        if (isLocalPlayer)
+        if (isLocalPlayer && IsAlive)
         {
             var forceVector = new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical")).normalized;
             forceVector *= _forceValue*Time.deltaTime;
@@ -241,7 +240,9 @@ public class PlayerMoving : NetworkBehaviour
 
         if (isLocalPlayer)
         {
-            if (col.gameObject.CompareTag(Tags.Respawn) && _spawnPoint != col.gameObject)
+            if (col.gameObject.CompareTag(Tags.Respawn) && 
+                _spawnPoint != col.gameObject && 
+                col.gameObject.name != SpawnPoint.MainSpawnName)
             {
                 if (_spawnPoint != null)
                     _spawnPoint.SendMessage(SpawnPoint.PlayerDeactivateMessage);
