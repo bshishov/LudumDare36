@@ -19,27 +19,17 @@ public class HostGameButtons : MonoBehaviour {
     private List<LevelPack.LevelData> _levels = new List<LevelPack.LevelData>();
     private CustomNetworkManager _networkManager;
 
-    private static int _defaultPort = 15678;
-    private static int _defaultMaxPlayers = 20;
-    private static int _maxPlayers = _defaultMaxPlayers;
+    private static uint _defaultMaxPlayers = 20;
+    private static uint _maxPlayers = _defaultMaxPlayers;
 
     public void Start()
     {
         _networkManager = GameObject.Find("NetworkManager").GetComponent<CustomNetworkManager>();
-        _networkManager.networkPort = _defaultPort;
+        _networkManager.networkPort = CustomNetworkManager.DefaultPort;
         _networkManager.offlineScene = "MainMenu";
 
         var dropDown = LevelPacksDropDown.GetComponent<Dropdown>();
         var options = new List<Dropdown.OptionData>();
-
-        //foreach (var levelPack in LevelPacks)
-        //{
-        //    foreach (var level in levelPack.Levels)
-        //    {
-        //        _levels.Add(level);
-        //        options.Add(new Dropdown.OptionData(string.Format("[{0}] {1}", levelPack.Name, level.Name), level.Thumbnail));
-        //    }
-        //}
 
         foreach (var levelPack in LevelPacks)
         {
@@ -53,9 +43,13 @@ public class HostGameButtons : MonoBehaviour {
     public void OnHost()
     {
         _networkManager.networkAddress = "localhost";
-        GetPort(GameObject.Find("ServerPort/Text"));
+        SetPortToNetworkManager(GameObject.Find("ServerPort/Text"));
+        SetMatchSizeToNetworkManager(GameObject.Find("MaximumPlayers/Text"));
 
-        var selectedName = LevelsGridToggle.ActiveToggles().First().gameObject.name;
+        var activeToggle = LevelsGridToggle.ActiveToggles().First();
+        if (activeToggle == null)
+            return;
+        var selectedName = activeToggle.gameObject.name;
         if (string.IsNullOrEmpty(selectedName))
             Debug.LogErrorFormat("No such level for dropdown value = {0}", selectedName);
 
@@ -68,7 +62,7 @@ public class HostGameButtons : MonoBehaviour {
 
     public void OnChangeMaxPlayers(string newValue)
     {
-        int.TryParse(newValue, out _maxPlayers);
+        uint.TryParse(newValue, out _maxPlayers);
         _maxPlayers = Math.Min(_maxPlayers, _defaultMaxPlayers);
         _maxPlayers = Math.Max(_maxPlayers, 1);
     }
@@ -99,12 +93,21 @@ public class HostGameButtons : MonoBehaviour {
         // TODO: size is not changing
     }
 
-    public void GetPort(GameObject target)
+    public void SetPortToNetworkManager(GameObject target)
     {
         var portText = target.GetComponent<Text>().text;
         if (portText == "")
-            _networkManager.networkPort = _defaultPort;
+            _networkManager.networkPort = CustomNetworkManager.DefaultPort;
         else
             _networkManager.networkPort = Convert.ToInt32(portText);
+    }
+
+    public void SetMatchSizeToNetworkManager(GameObject target)
+    {
+        var matchSize = target.GetComponent<Text>().text;
+        if (matchSize == "")
+            _networkManager.matchSize = _defaultMaxPlayers;
+        else
+            _networkManager.matchSize = Convert.ToUInt32(matchSize);
     }
 }

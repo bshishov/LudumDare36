@@ -15,6 +15,8 @@ public class CustomNetworkManager : NetworkManager
     private GameObject _errorPopup;
     private GameObject _processingPopup;
 
+    public static int DefaultPort = 15678;
+
     public override void OnClientError(NetworkConnection conn, int errorCode)
     {
         base.OnClientError(conn, errorCode);
