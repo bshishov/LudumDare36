@@ -70,7 +70,9 @@ public class PlayerIdentity : MonoBehaviour
         Color = color;
         var meshRenderer = GetComponentInChildren<SkinnedMeshRenderer>();
         if (meshRenderer != null)
+        {
             meshRenderer.material.color = color;
+        }
     }
 
     public void SetColor(string colorName)
@@ -121,5 +123,10 @@ public class PlayerIdentity : MonoBehaviour
         PlayerPrefs.SetFloat("player_color_r", Color.r);
         PlayerPrefs.SetFloat("player_color_g", Color.g);
         PlayerPrefs.SetFloat("player_color_b", Color.b);
+    }
+
+    public string GetName()
+    {
+        return PlayerPrefs.GetString("player_name", _defaultName);
     }
 }
