@@ -1,16 +1,21 @@
 ﻿using UnityEngine;
 using Assets.Scripts;
+using UnityEngine.SceneManagement;
 
 public class PauseMenuButtons : MonoBehaviour {
-    
+
+    public GameObject PlayButton;
+    public GameObject GameOverPanel;
+
     public void OnContinue()
     {
-        gameObject.SetActive(false);
+        var networkManager = GameObject.Find("NetworkManager").GetComponent<CustomNetworkManager>();
+        networkManager.ServerChangeScene(SceneManager.GetActiveScene().name);
     }
 
     public void OnExit()
     {
-        Application.LoadLevel("MainMenu");
+        SceneManager.LoadScene("MainMenu");
         var networkManager = GameObject.Find("NetworkManager").GetComponent<CustomNetworkManager>();
         switch (networkManager.NetworkingMode)
         {

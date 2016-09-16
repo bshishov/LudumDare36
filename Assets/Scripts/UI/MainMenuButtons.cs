@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.SceneManagement;
 
 public class MainMenuButtons : MonoBehaviour {
 
@@ -8,7 +9,7 @@ public class MainMenuButtons : MonoBehaviour {
 
     public void OnPlay()
     {
-        Application.LoadLevel("NetworkConnection");
+        SceneManager.LoadScene("NetworkConnection");
     }
 
     public void OnExit()

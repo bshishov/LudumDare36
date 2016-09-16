@@ -12,9 +12,7 @@ public class StartGameButtons : MonoBehaviour {
 
     public GameObject ConnectionProcessingPopup;
     public GameObject LevelsDropDown;
-    public LevelPack[] LevelPacks;
-
-    private List<LevelPack.LevelData> _levels = new List<LevelPack.LevelData>();
+    
     private GameObject _processingPopup;
     private CustomNetworkManager _networkManager;
 

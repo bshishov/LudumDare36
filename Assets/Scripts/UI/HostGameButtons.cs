@@ -15,8 +15,7 @@ public class HostGameButtons : MonoBehaviour {
     public ToggleGroup LevelsGridToggle;
     public GameObject LevelsItemTemplate;
     public LevelPack[] LevelPacks;
-
-    private List<LevelPack.LevelData> _levels = new List<LevelPack.LevelData>();
+    
     private CustomNetworkManager _networkManager;
 
     private static uint _defaultMaxPlayers = 20;

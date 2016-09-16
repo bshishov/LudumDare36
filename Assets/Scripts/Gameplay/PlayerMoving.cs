@@ -1,5 +1,7 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 [RequireComponent(typeof(AudioSource))]
 [RequireComponent(typeof(Rigidbody))]
@@ -30,6 +32,9 @@ public class PlayerMoving : NetworkBehaviour
     //private float _lastDeathTime = 0f;
     private float _forceValue;
 
+    private float _startTime;
+    private int _deathNumber = 0;
+
     void Start ()
     {
         _rigidBody = GetComponent<Rigidbody>();
@@ -37,6 +42,7 @@ public class PlayerMoving : NetworkBehaviour
         _dustParticleSystem = GetComponentInChildren<ParticleSystem>();
         _audioSource = GetComponent<AudioSource>();
         _spawnPoint = GameObject.Find(SpawnPoint.MainSpawnName);
+        _startTime = Time.time;
     }
 
     public override void OnStartLocalPlayer()
@@ -161,6 +167,7 @@ public class PlayerMoving : NetworkBehaviour
     [ClientRpc]
     public void RpcInitiateDeath()
     {
+        _deathNumber++;
         IsAlive = false;
         Instantiate(BloodParticles, transform.position + new Vector3(0f, 0.05f, 0f), Quaternion.identity);
 
@@ -206,11 +213,32 @@ public class PlayerMoving : NetworkBehaviour
         IsAlive = true;
     }
 
+    public void PlayerFinished()
+    {
+        var timeDelta = (int)Math.Round(Time.time - _startTime);
+        var wholeMinutes = timeDelta / 60;
+        var wholeSeconds = timeDelta % 60;
+
+        var pauseMenuControler = GameObject.Find("PauseCanvas").GetComponent<PauseMenuController>();
+        pauseMenuControler.GameOver = true;
+        pauseMenuControler.PauseCanvas.SetActive(true);
+        var pauseCanvasController = pauseMenuControler.PauseCanvas.GetComponent<PauseMenuButtons>();
+        pauseCanvasController.PlayButton.SetActive(false);
+        pauseCanvasController.GameOverPanel.SetActive(true);
+
+        GameObject.Find("Time").GetComponent<Text>().text = string.Format("{0} m {1} s", wholeMinutes, wholeSeconds);
+        GameObject.Find("Deaths").GetComponent<Text>().text = string.Format("{0} times", _deathNumber);
+    }
+
     void OnCollisionEnter(Collision col)
     {
         if (col.gameObject.CompareTag(Tags.MovingPlatform))
         {
             transform.parent = col.transform;
+        }
+        if (col.gameObject.CompareTag(Tags.Finish))
+        {
+            PlayerFinished();
         }
     }
     
