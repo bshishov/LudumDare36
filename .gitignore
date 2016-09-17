@@ -28,3 +28,12 @@ sysinfo.txt
 # Builds
 *.apk
 *.unitypackage
+
+
+# Lightmaps
+*.exr
+*.exr.meta
+LightmapSnapshot.asset
+LightmapSnapshot.asset.meta
+LightingData.asset
+LightingData.asset.meta
