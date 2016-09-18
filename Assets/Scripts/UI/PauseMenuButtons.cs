@@ -9,6 +9,10 @@ public class PauseMenuButtons : MonoBehaviour {
 
     public void OnContinue()
     {
+    }
+
+    public void OnReplay()
+    {
         var networkManager = GameObject.Find("NetworkManager").GetComponent<CustomNetworkManager>();
         networkManager.ServerChangeScene(SceneManager.GetActiveScene().name);
     }
