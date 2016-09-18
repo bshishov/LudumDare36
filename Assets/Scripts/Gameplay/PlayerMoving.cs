@@ -61,12 +61,12 @@ public class PlayerMoving : NetworkBehaviour
             {
                 CmdInitiateDeath();
             }
+            
+            var inputVector = Vector3.ClampMagnitude(new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical")), 1f);
 
-            var forceVector = new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical")).normalized;
-
-            if (forceVector.magnitude > 0.01f)
+            if (inputVector.magnitude > 0.01f)
             {
-                transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(forceVector.normalized),
+                transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(inputVector.normalized),
                     Time.deltaTime*RotationSpeed);
             }
 
@@ -91,17 +91,23 @@ public class PlayerMoving : NetworkBehaviour
             _dustParticleSystem.Stop();
         }
 
-        //if (!isLocalPlayer)
-        //    return;
-
-        if (velocityMagnitude >= MaximumSpeed)
-            return;
-
         if (isLocalPlayer && IsAlive)
         {
-            var forceVector = new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical")).normalized;
-            forceVector *= _forceValue*Time.deltaTime;
-            _rigidBody.AddForce(forceVector, ForceMode.Impulse);
+            var inputVector = Vector3.ClampMagnitude(new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical")), 1f);
+
+            //_rigidBody.MovePosition(transform.position + inputVector * Time.deltaTime * 1.9f);
+            //_rigidBody.AddForce(inputVector * _forceValue * Time.deltaTime, ForceMode.Impulse);
+            _rigidBody.AddForce(inputVector * _forceValue * Time.deltaTime * 2f, ForceMode.Impulse);
+            //_rigidBody.AddForce(inputVector * Time.deltaTime * 20.7f, ForceMode.VelocityChange);
+            //_childAnimator.SetFloat("Speed", inputVector.magnitude * 1.7f);
+
+            // clamp horizontal velocity to maximum
+            // only for a loval player (non-local handled over network transform)
+            if (velocityMagnitude > MaximumSpeed)
+            {
+                var horizontalClamped = Vector3.ClampMagnitude(new Vector3(_rigidBody.velocity.x, 0, _rigidBody.velocity.z), MaximumSpeed);
+                _rigidBody.velocity = new Vector3(horizontalClamped.x, _rigidBody.velocity.y, horizontalClamped.z);
+            }
         }
 
         // setting animation speed
@@ -109,11 +115,11 @@ public class PlayerMoving : NetworkBehaviour
         {
             var angle = Vector3.Angle(_rigidBody.velocity, _rigidBody.transform.forward) * 2 * Mathf.PI /360;
             var animationSpeed = 1.5f * velocityMagnitude * (Mathf.Abs(Mathf.Sin(angle * 2f)) + 0.5f);
-            _childAnimator.SetFloat("Speed", animationSpeed);
+            //_childAnimator.SetFloat("Speed", animationSpeed);
         }
         else
         {
-            _childAnimator.SetFloat("Speed", velocityMagnitude);
+           // _childAnimator.SetFloat("Speed", velocityMagnitude);
         }
 
         TryFloor();
@@ -178,10 +184,13 @@ public class PlayerMoving : NetworkBehaviour
 
     public void TryFloor()
     {
+        const float rayEmitterHeight = 0.1f;
+        const float rayZ = 0.25f;
+
         RaycastHit hit;
-        var forward = transform.TransformDirection(new Vector3(0f, -1f, 0.05f));
+        var forward = transform.TransformDirection(new Vector3(0f, -1f, rayZ));
         var initialPosition = transform.position;
-        initialPosition.y = 0.5f;
+        initialPosition.y = rayEmitterHeight;
         var ray = new Ray(initialPosition, forward);
         if (Physics.Raycast(ray, out hit, 1f))
         {
@@ -283,4 +292,14 @@ public class PlayerMoving : NetworkBehaviour
     void OnTriggerExit(Collider col)
     {
     }
+
+#if DEBUG
+    void OnGUI()
+    {
+        var inputVector = Vector3.ClampMagnitude(new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical")), 1f);
+        GUI.TextField(new Rect(0, 0, 200, 20), string.Format("input: {0}", inputVector.ToString()));
+        GUI.TextField(new Rect(0, 25, 200, 20), string.Format("velocity: {0}", _rigidBody.velocity.ToString()));
+        GUI.TextField(new Rect(0, 50, 200, 20), string.Format("velocity: {0}", _rigidBody.velocity.magnitude));
+    }
+#endif
 }
