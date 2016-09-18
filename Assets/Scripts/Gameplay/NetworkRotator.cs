@@ -14,9 +14,9 @@ public class NetworkRotator : NetworkBehaviour
 
     void Start ()
     {
-	    if(!isClient)
+	    if(isClient)
         {
-            gameObject.transform.rotation = _syncRotation;
+            gameObject.transform.localRotation = _syncRotation;
         }
 	}
 	
@@ -25,6 +25,6 @@ public class NetworkRotator : NetworkBehaviour
         gameObject.transform.Rotate(Speed * Time.deltaTime, RotationSpace);
 
 	    if (isServer && hasAuthority)
-            _syncRotation = gameObject.transform.rotation;
+            _syncRotation = gameObject.transform.localRotation;
     }
 }

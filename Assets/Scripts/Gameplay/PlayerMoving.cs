@@ -14,9 +14,10 @@ public class PlayerMoving : NetworkBehaviour
 
     public float DefaultForceValue = 70f;
     public float ForceValueForIce = 0.2f;
+    public float ForceValueInAir = 35f;
     public float MaximumSpeed = 0.05f;
     public float RotationSpeed = 10f;
-    public float PunchMultiplier = 20f;
+    public float PunchMultiplier = 25f;
     public AudioClip PushAudio;
     public GameObject BloodParticles;
     
@@ -160,7 +161,7 @@ public class PlayerMoving : NetworkBehaviour
     [ClientRpc]
     public void RpcPushPlayer(Vector3 direction)
     {
-        _rigidBody.AddForce(((direction + new Vector3(0f, 1f, 0f)).normalized) * PunchMultiplier, ForceMode.Impulse);
+        _rigidBody.AddForce((direction + new Vector3(0f, 0.5f, 0f)).normalized * PunchMultiplier, ForceMode.Impulse);
         _audioSource.PlayOneShot(PushAudio, 0.8f);
     }
 
@@ -202,6 +203,10 @@ public class PlayerMoving : NetworkBehaviour
             {
                 _forceValue = DefaultForceValue;
             }
+        }
+        else
+        {
+            _forceValue = ForceValueInAir;
         }
     }
 
@@ -296,10 +301,14 @@ public class PlayerMoving : NetworkBehaviour
 #if DEBUG
     void OnGUI()
     {
-        var inputVector = Vector3.ClampMagnitude(new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical")), 1f);
-        GUI.TextField(new Rect(0, 0, 200, 20), string.Format("input: {0}", inputVector.ToString()));
-        GUI.TextField(new Rect(0, 25, 200, 20), string.Format("velocity: {0}", _rigidBody.velocity.ToString()));
-        GUI.TextField(new Rect(0, 50, 200, 20), string.Format("velocity: {0}", _rigidBody.velocity.magnitude));
+        if (isLocalPlayer)
+        {
+            var inputVector =
+                Vector3.ClampMagnitude(new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical")), 1f);
+            GUI.TextField(new Rect(0, 0, 200, 20), string.Format("input: {0}", inputVector.ToString()));
+            GUI.TextField(new Rect(0, 25, 200, 20), string.Format("velocity: {0}", _rigidBody.velocity.ToString()));
+            GUI.TextField(new Rect(0, 50, 200, 20), string.Format("velocity: {0}", _rigidBody.velocity.magnitude));
+        }
     }
 #endif
 }
