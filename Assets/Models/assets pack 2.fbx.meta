@@ -1,0 +1,163 @@
+fileFormatVersion: 2
+guid: 87e73d19502dba743b36131871f1c0bc
+timeCreated: 1474314943
+licenseType: Free
+ModelImporter:
+  serializedVersion: 19
+  fileIDToRecycleName:
+    100000: //RootNode
+    100002: bridge
+    100004: bridge 1x3  line
+    100006: bridge 1x3 end
+    100008: bridge 1x3 start
+    100010: bridge angle
+    100012: bridge line
+    100014: broken fence
+    100016: brroken wall
+    100018: cage 1
+    100020: cage 2
+    100022: fence  big
+    100024: fence end
+    100026: fence small
+    100028: pillar
+    100030: pillar 2
+    100032: pillar small
+    100034: wall
+    100036: wall hole
+    400000: //RootNode
+    400002: bridge
+    400004: bridge 1x3  line
+    400006: bridge 1x3 end
+    400008: bridge 1x3 start
+    400010: bridge angle
+    400012: bridge line
+    400014: broken fence
+    400016: brroken wall
+    400018: cage 1
+    400020: cage 2
+    400022: fence  big
+    400024: fence end
+    400026: fence small
+    400028: pillar
+    400030: pillar 2
+    400032: pillar small
+    400034: wall
+    400036: wall hole
+    2300000: bridge
+    2300002: bridge 1x3  line
+    2300004: bridge 1x3 end
+    2300006: bridge 1x3 start
+    2300008: bridge angle
+    2300010: bridge line
+    2300012: broken fence
+    2300014: brroken wall
+    2300016: cage 1
+    2300018: cage 2
+    2300020: fence  big
+    2300022: fence end
+    2300024: fence small
+    2300026: pillar
+    2300028: pillar 2
+    2300030: pillar small
+    2300032: wall
+    2300034: wall hole
+    3300000: bridge
+    3300002: bridge 1x3  line
+    3300004: bridge 1x3 end
+    3300006: bridge 1x3 start
+    3300008: bridge angle
+    3300010: bridge line
+    3300012: broken fence
+    3300014: brroken wall
+    3300016: cage 1
+    3300018: cage 2
+    3300020: fence  big
+    3300022: fence end
+    3300024: fence small
+    3300026: pillar
+    3300028: pillar 2
+    3300030: pillar small
+    3300032: wall
+    3300034: wall hole
+    4300000: bridge 1x3 start
+    4300002: bridge 1x3  line
+    4300004: pillar small
+    4300006: pillar
+    4300008: fence end
+    4300010: cage 2
+    4300012: cage 1
+    4300014: pillar 2
+    4300016: bridge line
+    4300018: bridge 1x3 end
+    4300020: bridge angle
+    4300022: bridge
+    4300024: fence small
+    4300026: broken fence
+    4300028: fence  big
+    4300030: wall
+    4300032: brroken wall
+    4300034: wall hole
+  materials:
+    importMaterials: 0
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    importBlendShapes: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+  importAnimation: 0
+  copyAvatar: 0
+  humanDescription:
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
