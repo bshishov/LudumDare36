@@ -5,6 +5,7 @@ using Assets.Scripts;
 public class PauseMenuController : MonoBehaviour {
     
     public GameObject PauseCanvas;
+    public GameObject ScoreCanvas;
 
     [HideInInspector]
     public bool GameOver = false;
@@ -27,5 +28,15 @@ public class PauseMenuController : MonoBehaviour {
 
         if (Time.time - _lastInteraction >= _interactionTimeout)
             _allowInteraction = true;
+
+        if (Input.GetKeyDown(KeyCode.Tab) || Input.GetKeyDown(KeyCode.Q))
+        {
+            ScoreCanvas.SetActive(true);
+        }
+
+        if (Input.GetKeyUp(KeyCode.Tab) || Input.GetKeyUp(KeyCode.Q))
+        {
+            ScoreCanvas.SetActive(false);
+        }
     }
 }

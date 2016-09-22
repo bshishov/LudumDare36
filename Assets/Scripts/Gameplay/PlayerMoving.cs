@@ -36,6 +36,9 @@ public class PlayerMoving : NetworkBehaviour
     private float _startTime;
     private int _deathNumber = 0;
 
+    [HideInInspector]
+    public int DeathNumber {  get { return _deathNumber; } }
+
     void Start ()
     {
         _rigidBody = GetComponent<Rigidbody>();

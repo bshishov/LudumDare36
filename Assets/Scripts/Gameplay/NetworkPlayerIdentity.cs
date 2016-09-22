@@ -7,6 +7,8 @@ using UnityEngine.Networking;
 public class NetworkPlayerIdentity : NetworkBehaviour
 {
     private PlayerIdentity _identity;
+    [HideInInspector]
+    public PlayerIdentity Identity {  get { return _identity; } }
 
     [SyncVar] private string _hatNameSync;
     [SyncVar] private Color _colorSync;
@@ -44,6 +46,8 @@ public class NetworkPlayerIdentity : NetworkBehaviour
             _identity.SetName(_nameSync);
             _identity.SetHat(_hatNameSync);
         }
+
+        PlayersList.Players.Add(this);
     }
 
     
@@ -68,5 +72,11 @@ public class NetworkPlayerIdentity : NetworkBehaviour
             _identity.SetHat(hatName);
             _identity.SetColor(color);
         }
+    }
+
+    public void OnDestroy()
+    {
+        if (PlayersList.Players.Contains(this))
+            PlayersList.Players.Remove(this);
     }
 }

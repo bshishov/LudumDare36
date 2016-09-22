@@ -51,6 +51,7 @@ public class HostGameButtons : MonoBehaviour {
         var selectedName = activeToggle.gameObject.name;
         if (string.IsNullOrEmpty(selectedName))
             Debug.LogErrorFormat("No such level for dropdown value = {0}", selectedName);
+        _networkManager.matchSize = _maxPlayers;
 
         _networkManager.onlineScene = selectedName;
         _networkManager.NetworkingMode = CustomNetworkManager.NetworkingModes.Host;
@@ -74,11 +75,10 @@ public class HostGameButtons : MonoBehaviour {
 
         foreach (var level in LevelPacks[index].Levels)
         {
-            var newItem = Instantiate(LevelsItemTemplate) as GameObject;
+            var newItem = Instantiate(LevelsItemTemplate, LevelsGrid.transform) as GameObject;
             newItem.transform.FindChild("Image").GetComponentInChildren<Image>().sprite = level.Thumbnail;
             newItem.transform.FindChild("Text").GetComponentInChildren<Text>().text = level.Name;
             newItem.name = level.SceneName;
-            newItem.transform.SetParent(LevelsGrid.transform);
             newItem.transform.localScale = Vector3.one;
 
             var newItemToggle = newItem.GetComponent<Toggle>();
