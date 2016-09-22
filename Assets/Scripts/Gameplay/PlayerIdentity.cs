@@ -2,6 +2,7 @@
 using UnityEngine;
 using System.Collections;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 public class PlayerIdentity : MonoBehaviour
 {
@@ -99,10 +100,14 @@ public class PlayerIdentity : MonoBehaviour
 
     public void SetName(string playerName)
     {
-        if(string.IsNullOrEmpty(playerName))
+        if (string.IsNullOrEmpty(playerName))
+        {
             Debug.LogWarning("TRYING TO SET AN EMPTY NAME");
+            return;
+        }
 
         Name = playerName;
+        gameObject.transform.FindChild("UI/name").GetComponent<Text>().text = playerName;
     }
 
     public void SetFromPlayerPrefs()
