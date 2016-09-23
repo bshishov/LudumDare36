@@ -11,10 +11,13 @@ public class SettingsMenuPanel : MonoBehaviour {
     public GameObject ResolutionItemTemplate;
     public ResolutionsList ResolutionsList;
 
-	void Start ()
+    public GameObject SoundSlider;
+    public GameObject WindowedToggle;
+
+    void Start ()
     {
-        gameObject.transform.FindChild("Panel/SoundSlider").GetComponent<Slider>().value = PlayerPrefs.GetFloat("volumeValue", 1f);
-        gameObject.transform.FindChild("Panel/WindowedToggle").GetComponent<Toggle>().isOn = PlayerPrefs.GetInt("isFullScreen", 1) != 1;
+        SoundSlider.GetComponent<Slider>().value = PlayerPrefs.GetFloat("volumeValue", 1f);
+        WindowedToggle.GetComponent<Toggle>().isOn = PlayerPrefs.GetInt("isFullScreen", 1) != 1;
         
         foreach (var item in ResolutionsList.Resolutions)
         {
@@ -47,7 +50,7 @@ public class SettingsMenuPanel : MonoBehaviour {
     {
         if (PlayerPrefs.GetInt("isFullScreen", 1) == 1)
         {
-            gameObject.transform.FindChild("Panel/WindowedToggle").GetComponent<Dropdown>().interactable = false;
+            ResolutionsDropdown.interactable = false;
             Screen.SetResolution(Screen.currentResolution.width, Screen.currentResolution.height, true);
         }
         else
