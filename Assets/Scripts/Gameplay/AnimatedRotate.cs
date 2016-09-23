@@ -24,15 +24,14 @@ public class AnimatedRotate : MonoBehaviour
         _initialRotation = transform.rotation;
         _initialPosition = transform.position;
         _pivot = transform.TransformPoint(RotationPoint);
-        _rotationAxis = transform.TransformVector(RotationAxis);
+        _rotationAxis = transform.TransformVector(RotationAxis).normalized;
     }
 	
 	void Update ()
 	{
-	    var rot = Quaternion.AngleAxis(Curve.Evaluate(Time.time * Speed) * Amount, _rotationAxis);
-        var rel = _initialPosition - _pivot;
-	    rel = rot * rel;
-        transform.position = _initialPosition + rel - (_initialPosition - _pivot);
+	    var rot = Quaternion.AngleAxis(Curve.Evaluate(Time.time * Speed + Offset) * Amount, _rotationAxis);
+        var dir = _initialPosition - _pivot;
+        transform.position = _initialPosition + rot * dir - dir;
         transform.rotation = rot * _initialRotation;
 	}
 
