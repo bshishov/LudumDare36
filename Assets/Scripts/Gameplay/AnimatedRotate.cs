@@ -1,10 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using UnityEngine.Events;
 
+
+[RequireComponent(typeof(PivotRotation))]
 public class AnimatedRotate : MonoBehaviour
 {
-    public Vector3 RotationPoint;
-    public Vector3 RotationAxis;
     public AnimationCurve Curve;
     public float Offset;
 
@@ -14,34 +16,15 @@ public class AnimatedRotate : MonoBehaviour
     [Range(0.1f, 360f)]
     public float Amount = 1f;
 
-    private Quaternion _initialRotation;
-    private Vector3 _initialPosition;
-    private Vector3 _pivot;
-    private Vector3 _rotationAxis;
+    private PivotRotation _pivotRotation;
 
     void Start ()
     {
-        _initialRotation = transform.rotation;
-        _initialPosition = transform.position;
-        _pivot = transform.TransformPoint(RotationPoint);
-        _rotationAxis = transform.TransformVector(RotationAxis).normalized;
+        _pivotRotation = GetComponent<PivotRotation>();
     }
 	
 	void Update ()
 	{
-	    var rot = Quaternion.AngleAxis(Curve.Evaluate(Time.time * Speed + Offset) * Amount, _rotationAxis);
-        var dir = _initialPosition - _pivot;
-        transform.position = _initialPosition + rot * dir - dir;
-        transform.rotation = rot * _initialRotation;
+        _pivotRotation.Value = Curve.Evaluate(Time.time * Speed + Offset) * Amount;
 	}
-
-    void OnDrawGizmosSelected()
-    {
-        Gizmos.DrawWireSphere(transform.TransformPoint(RotationPoint), 0.5f);
-        
-        Gizmos.DrawLine(transform.TransformPoint(RotationPoint), transform.TransformPoint(RotationPoint) + _rotationAxis);
-
-        Gizmos.color = Color.blue;
-        Gizmos.DrawWireSphere(_pivot, 0.5f);
-    }
 }
