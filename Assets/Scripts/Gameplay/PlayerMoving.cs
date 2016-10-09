@@ -59,11 +59,12 @@ public class PlayerMoving : NetworkBehaviour
     
     void Update ()
     {
-        if (isLocalPlayer && IsAlive)
+        if (isLocalPlayer)
         {
             if (transform.position.y <= KillingFloorY)
             {
                 CmdInitiateDeath();
+                return;
             }
             
             var inputVector = Vector3.ClampMagnitude(new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical")), 1f);
@@ -177,6 +178,7 @@ public class PlayerMoving : NetworkBehaviour
     [ClientRpc]
     public void RpcInitiateDeath()
     {
+        gameObject.SetActive(false);
         _deathNumber++;
         IsAlive = false;
         Instantiate(BloodParticles, transform.position + new Vector3(0f, 0.05f, 0f), Quaternion.identity);
@@ -228,6 +230,7 @@ public class PlayerMoving : NetworkBehaviour
             _spawnPoint.SendMessage(SpawnPoint.PlayerRespawnMessage);
         }
         IsAlive = true;
+        gameObject.SetActive(true);
     }
 
     public void PlayerFinished()

@@ -21,9 +21,13 @@ public class SettingsMenuPanel : MonoBehaviour {
 
     void Start ()
     {
+    }
+
+    public void InitializeSettings()
+    {
         SoundSlider.GetComponent<Slider>().value = PlayerPrefs.GetFloat(VolumeKey, 1f);
         WindowedToggle.GetComponent<Toggle>().isOn = PlayerPrefs.GetInt(IsWindowedKey, 1) != 1;
-        
+
         ResolutionsDropdown.AddOptions(ResolutionsList.Resolutions.Select(t => string.Format("{0}x{1}", t.Width, t.Height)).ToList());
         ResolutionsDropdown.value = PlayerPrefs.GetInt(ResolutionKey, 3); // for fullhd by default
         ResolutionsDropdown.interactable = !Screen.fullScreen;
