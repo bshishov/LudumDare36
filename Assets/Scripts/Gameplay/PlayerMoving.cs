@@ -59,9 +59,6 @@ public class PlayerMoving : NetworkBehaviour
     
     void Update ()
     {
-        if (!IsAlive)
-            CmdPlayerToSpawn();
-
         if (isLocalPlayer)
         {
             if (transform.position.y <= KillingFloorY)
@@ -188,6 +185,7 @@ public class PlayerMoving : NetworkBehaviour
 
         //_lastDeathTime = Time.time;
         _lastPunchTime = Time.time - 2 * PunchCooldown;
+        CmdPlayerToSpawn();
     }
 
     public void TryFloor()
@@ -282,15 +280,14 @@ public class PlayerMoving : NetworkBehaviour
     {
         if (isServer)
         {
-        }
-
-        if (isLocalPlayer)
-        {
             if (col.gameObject.CompareTag(Tags.Killer))
             {
                 CmdInitiateDeath();
             }
+        }
 
+        if (isLocalPlayer)
+        {
             if (col.gameObject.CompareTag(Tags.Respawn) && 
                 _spawnPoint != col.gameObject && 
                 col.gameObject.name != SpawnPoint.MainSpawnName)
