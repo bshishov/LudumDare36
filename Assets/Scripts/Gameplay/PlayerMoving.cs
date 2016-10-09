@@ -59,11 +59,15 @@ public class PlayerMoving : NetworkBehaviour
     
     void Update ()
     {
-        if (isLocalPlayer && IsAlive)
+        if (!IsAlive)
+            CmdPlayerToSpawn();
+
+        if (isLocalPlayer)
         {
             if (transform.position.y <= KillingFloorY)
             {
                 CmdInitiateDeath();
+                return;
             }
             
             var inputVector = Vector3.ClampMagnitude(new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical")), 1f);
@@ -177,13 +181,13 @@ public class PlayerMoving : NetworkBehaviour
     [ClientRpc]
     public void RpcInitiateDeath()
     {
+        gameObject.SetActive(false);
         _deathNumber++;
         IsAlive = false;
         Instantiate(BloodParticles, transform.position + new Vector3(0f, 0.05f, 0f), Quaternion.identity);
 
         //_lastDeathTime = Time.time;
         _lastPunchTime = Time.time - 2 * PunchCooldown;
-        CmdPlayerToSpawn();
     }
 
     public void TryFloor()
@@ -228,6 +232,7 @@ public class PlayerMoving : NetworkBehaviour
             _spawnPoint.SendMessage(SpawnPoint.PlayerRespawnMessage);
         }
         IsAlive = true;
+        gameObject.SetActive(true);
     }
 
     public void PlayerFinished()
@@ -277,14 +282,15 @@ public class PlayerMoving : NetworkBehaviour
     {
         if (isServer)
         {
-            if (col.gameObject.CompareTag(Tags.Killer))
-            {
-                CmdInitiateDeath();
-            }
         }
 
         if (isLocalPlayer)
         {
+            if (col.gameObject.CompareTag(Tags.Killer))
+            {
+                CmdInitiateDeath();
+            }
+
             if (col.gameObject.CompareTag(Tags.Respawn) && 
                 _spawnPoint != col.gameObject && 
                 col.gameObject.name != SpawnPoint.MainSpawnName)
