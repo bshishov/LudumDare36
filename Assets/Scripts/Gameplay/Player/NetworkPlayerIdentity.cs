@@ -64,6 +64,7 @@ public class NetworkPlayerIdentity : NetworkBehaviour
         RpcSetIdenitity(playerName, color, hatName);
     }
 
+    [ClientRpc]
     void RpcSetIdenitity(string playerName, Color color, string hatName)
     {
         if (!isLocalPlayer)
