@@ -129,9 +129,4 @@ public class PlayerIdentity : MonoBehaviour
         PlayerPrefs.SetFloat("player_color_g", Color.g);
         PlayerPrefs.SetFloat("player_color_b", Color.b);
     }
-
-    public string GetName()
-    {
-        return PlayerPrefs.GetString("player_name", _defaultName);
-    }
 }

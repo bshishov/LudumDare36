@@ -22,7 +22,7 @@ public class PlayersList : MonoBehaviour {
             }
             else
             {
-                row.FindChild("DeathsNumber").GetComponent<Text>().text = player.gameObject.GetComponent<PlayerMoving>().DeathNumber.ToString();
+                row.FindChild("DeathsNumber").GetComponent<Text>().text = player.gameObject.GetComponent<PlayerState>().DeathsCount.ToString();
             }
         }
     }
