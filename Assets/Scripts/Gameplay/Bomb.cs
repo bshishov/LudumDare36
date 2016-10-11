@@ -10,21 +10,36 @@ public class Bomb : MonoBehaviour
     public float BlastRadius = 2f;
     public float BlastPower = 1f;
     public BuffData ApplyBuff;
-    
+
+    private Collider _collider;
+
+    void Start()
+    {
+        _collider = this.GetComponent<Collider>();
+    }
 	
     void OnCollisionEnter(Collision collision)
+    {
+        if (_collider.enabled)
+        {
+            Blast();
+            _collider.enabled = false;
+            Destroy(gameObject);
+        }
+    }
+
+    void Blast()
     {
         if (DestroyEffectPrefab != null)
         {
             GameObject.Instantiate(DestroyEffectPrefab, transform.position, Quaternion.identity);
         }
         
-        if (collision.gameObject.CompareTag(Tags.Player))
-        {
-            // TODO: ADD SOMETHING ??
-        }
+        var colliders = Physics.OverlapSphere(transform.position, 
+            BlastRadius, 
+            LayerMask.GetMask("Default"),
+            QueryTriggerInteraction.Ignore);
 
-        var colliders = Physics.OverlapSphere(transform.position, BlastRadius);
         foreach (var cldr in colliders)
         {
             if (cldr is CapsuleCollider && cldr.gameObject.CompareTag(Tags.Player))
@@ -34,24 +49,22 @@ public class Bomb : MonoBehaviour
                     var movement = cldr.gameObject.GetComponent<PlayerMovement>();
                     if (movement != null && movement.isServer)
                     {
-                        var direction = (cldr.transform.position - transform.position).normalized;
+                        var direction = cldr.transform.position - transform.position;
                         if (direction.y <= 0.1f)
                             direction.y = 0.1f;
 
-                        movement.CmdPushPlayer(direction*BlastPower);
+                        movement.CmdPushPlayer(direction.normalized * BlastPower / (1f +direction.magnitude));
                     }
                 }
 
                 if (ApplyBuff != null)
                 {
                     var playerState = cldr.gameObject.GetComponent<PlayerState>();
-                    if(playerState.isServer)
+                    if (playerState.isServer)
                         playerState.CmdApplyBuff(ApplyBuff.name);
                 }
             }
         }
-
-        Destroy(gameObject);
     }
 
     void OnDrawGizmosSelected()
