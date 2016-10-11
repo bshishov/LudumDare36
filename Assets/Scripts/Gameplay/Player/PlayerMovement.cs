@@ -57,8 +57,26 @@ public class PlayerMovement : NetworkBehaviour
                 Time.deltaTime * RotationSpeed);
         }
 
-        if(_state.CanWalk)
+        var velocityMagnitude = new Vector3(_rigidBody.velocity.x, 0, _rigidBody.velocity.z).magnitude;
+        if (velocityMagnitude > MaximumSpeed)
+        {
+            inputVector *= velocityMagnitude/( MaximumSpeed * 100f);
+        }
+
+        if (_state.CanWalk)
             _rigidBody.AddForce(inputVector * _forceValue * Time.deltaTime * 2f * _state.SpeedModifier, ForceMode.Impulse);
+        
+        /*
+        if (inputVector.magnitude > 0.1f)
+        {// Clamp velocity
+            
+            if (velocityMagnitude > MaximumSpeed)
+            {
+                var horizontalClamped =
+                    Vector3.ClampMagnitude(new Vector3(_rigidBody.velocity.x, 0, _rigidBody.velocity.z), MaximumSpeed);
+                _rigidBody.velocity = new Vector3(horizontalClamped.x, _rigidBody.velocity.y, horizontalClamped.z);
+            }
+        }*/
     }
 
 
@@ -87,13 +105,6 @@ public class PlayerMovement : NetworkBehaviour
         else if (_dustParticleSystem.isPlaying && velocityMagnitude < 0.1f)
         {
             _dustParticleSystem.Stop();
-        }
-
-        // Clamp velocity
-        if (velocityMagnitude > MaximumSpeed)
-        {
-            var horizontalClamped = Vector3.ClampMagnitude(new Vector3(_rigidBody.velocity.x, 0, _rigidBody.velocity.z), MaximumSpeed);
-            _rigidBody.velocity = new Vector3(horizontalClamped.x, _rigidBody.velocity.y, horizontalClamped.z);
         }
 
         const float rayEmitterHeight = 0.1f;

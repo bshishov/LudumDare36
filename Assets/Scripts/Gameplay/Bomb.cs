@@ -27,7 +27,7 @@ public class Bomb : MonoBehaviour
         var colliders = Physics.OverlapSphere(transform.position, BlastRadius);
         foreach (var cldr in colliders)
         {
-            if (cldr.gameObject.CompareTag(Tags.Player))
+            if (cldr is CapsuleCollider && cldr.gameObject.CompareTag(Tags.Player))
             {
                 if (BlastPower > 0)
                 {
