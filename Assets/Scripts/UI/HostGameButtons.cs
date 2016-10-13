@@ -10,7 +10,9 @@ using Assets.Scripts;
 using Assets.Scripts.UI;
 using System.Net.Sockets;
 using System.Net;
+#if UNITY_STANDALONE
 using Open.Nat;
+#endif
 
 public class HostGameButtons : MonoBehaviour {
     
@@ -42,11 +44,20 @@ public class HostGameButtons : MonoBehaviour {
 
         dropDown.AddOptions(options);
 
-        var discoverer = new NatDiscoverer();
-        var cts = new CancellationTokenSource();
-        var device = discoverer.DiscoverDeviceAsync(PortMapper.Upnp, cts);
-        device.Wait();
-        device.Result.CreatePortMapAsync(new Mapping(Protocol.Tcp, 15678, 15678, "GDGP"));
+#if UNITY_STANDALONE
+        try
+        {
+            var discoverer = new NatDiscoverer();
+            var cts = new CancellationTokenSource();
+            var device = discoverer.DiscoverDeviceAsync(PortMapper.Upnp, cts);
+            device.Wait();
+            device.Result.CreatePortMapAsync(new Mapping(Protocol.Tcp, 15678, 15678, "GDGP"));
+        }
+        catch
+        {
+            Debug.LogWarning("UPnP port opening failed");
+        }
+#endif
     }
 
     public string GetLocalIPAddress()
