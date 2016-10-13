@@ -1,0 +1,241 @@
+fileFormatVersion: 2
+guid: 2bfea0da5d221974db2c9e0c4737f6e7
+timeCreated: 1476376395
+licenseType: Free
+TextureImporter:
+  fileIDToRecycleName:
+    21300000: ui_button_active
+    21300002: ui_panel_border
+    21300004: ui_panel_small_border
+    21300006: ui_panel_rich_border
+    21300008: ui_button_hover
+    21300010: ui_panel_small
+    21300012: ui_panel_rich_bgr
+    21300014: ui_panel
+    21300016: ui_panel_small_black
+    21300018: ui_button_pressed
+    21300020: ui_button_disabled
+    21300022: ui_panel_black
+    21300024: ui_panel_gray_bgr
+  serializedVersion: 2
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 1
+    linearTexture: 0
+    correctGamma: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 0
+  cubemapConvolution: 0
+  cubemapConvolutionSteps: 7
+  cubemapConvolutionExponent: 1.5
+  seamlessCubemap: 0
+  textureFormat: -1
+  maxTextureSize: 2048
+  textureSettings:
+    filterMode: -1
+    aniso: 16
+    mipBias: -1
+    wrapMode: 1
+  nPOTScale: 0
+  lightmap: 0
+  rGBM: 0
+  compressionQuality: 50
+  allowsAlphaSplitting: 0
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spritePixelsToUnits: 100
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  buildTargetSettings: []
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: ui_button_active
+      rect:
+        serializedVersion: 2
+        x: 50
+        y: 917
+        width: 211
+        height: 58
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 13, y: 13, z: 13, w: 13}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: ui_panel_border
+      rect:
+        serializedVersion: 2
+        x: 312
+        y: 880
+        width: 221
+        height: 100
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 18, y: 20, z: 20, w: 19}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: ui_panel_small_border
+      rect:
+        serializedVersion: 2
+        x: 558
+        y: 916
+        width: 115
+        height: 56
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 14, y: 14, z: 15, w: 14}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: ui_panel_rich_border
+      rect:
+        serializedVersion: 2
+        x: 712
+        y: 870
+        width: 243
+        height: 121
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 43, y: 40, z: 50, w: 37}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: ui_button_hover
+      rect:
+        serializedVersion: 2
+        x: 50
+        y: 816
+        width: 211
+        height: 58
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 13, y: 14, z: 13, w: 13}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: ui_panel_small
+      rect:
+        serializedVersion: 2
+        x: 558
+        y: 850
+        width: 115
+        height: 55
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 14, y: 13, z: 15, w: 14}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: ui_panel_rich_bgr
+      rect:
+        serializedVersion: 2
+        x: 712
+        y: 734
+        width: 243
+        height: 121
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 43, y: 41, z: 50, w: 42}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: ui_panel
+      rect:
+        serializedVersion: 2
+        x: 312
+        y: 744
+        width: 221
+        height: 100
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 18, y: 20, z: 20, w: 18}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: ui_panel_small_black
+      rect:
+        serializedVersion: 2
+        x: 558
+        y: 782
+        width: 115
+        height: 55
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 14, y: 15, z: 15, w: 15}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: ui_button_pressed
+      rect:
+        serializedVersion: 2
+        x: 50
+        y: 714
+        width: 211
+        height: 58
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 13, y: 13, z: 13, w: 14}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: ui_button_disabled
+      rect:
+        serializedVersion: 2
+        x: 50
+        y: 616
+        width: 211
+        height: 58
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 13, y: 13, z: 14, w: 13}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: ui_panel_black
+      rect:
+        serializedVersion: 2
+        x: 312
+        y: 608
+        width: 221
+        height: 101
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 18, y: 21, z: 19, w: 19}
+      outline: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: ui_panel_gray_bgr
+      rect:
+        serializedVersion: 2
+        x: 322
+        y: 490
+        width: 205
+        height: 83
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 10, y: 8, z: 10, w: 5}
+      outline: []
+      tessellationDetail: 0
+    outline: []
+  spritePackingTag: 
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
