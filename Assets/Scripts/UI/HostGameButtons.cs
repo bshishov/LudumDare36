@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System;
+using System.Threading;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,6 +8,9 @@ using UnityEngine.Networking;
 using UnityEngine.UI;
 using Assets.Scripts;
 using Assets.Scripts.UI;
+using System.Net.Sockets;
+using System.Net;
+using Open.Nat;
 
 public class HostGameButtons : MonoBehaviour {
     
@@ -37,6 +41,25 @@ public class HostGameButtons : MonoBehaviour {
         OnLevelPackChanged(0);
 
         dropDown.AddOptions(options);
+
+        var discoverer = new NatDiscoverer();
+        var cts = new CancellationTokenSource();
+        var device = discoverer.DiscoverDeviceAsync(PortMapper.Upnp, cts);
+        device.Wait();
+        device.Result.CreatePortMapAsync(new Mapping(Protocol.Tcp, 15678, 15678, "GDGP"));
+    }
+
+    public string GetLocalIPAddress()
+    {
+        var host = Dns.GetHostEntry(Dns.GetHostName());
+        foreach (var ip in host.AddressList)
+        {
+            if (ip.AddressFamily == AddressFamily.InterNetwork)
+            {
+                return ip.ToString();
+            }
+        }
+        throw new Exception("Local IP Address Not Found!");
     }
 
     public void OnHost()
@@ -50,7 +73,10 @@ public class HostGameButtons : MonoBehaviour {
             return;
         var selectedName = activeToggle.gameObject.name;
         if (string.IsNullOrEmpty(selectedName))
+        {
             Debug.LogErrorFormat("No such level for dropdown value = {0}", selectedName);
+            return;
+        }
         _networkManager.matchSize = _maxPlayers;
 
         _networkManager.onlineScene = selectedName;
