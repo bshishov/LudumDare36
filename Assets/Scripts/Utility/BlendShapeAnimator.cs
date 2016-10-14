@@ -8,8 +8,6 @@ public class BlendShapeAnimator : MonoBehaviour
     public int EndFrame = 2;
 
     private SkinnedMeshRenderer _skinnedMeshRenderer;
-    private Mesh _skinnedMesh;
-    private int _count;
 
     private int _indexOne;
     private int _indexTwo;
@@ -20,13 +18,11 @@ public class BlendShapeAnimator : MonoBehaviour
         _indexOne = StartFrame;
         _indexTwo = StartFrame + 1;
         _skinnedMeshRenderer = GetComponent<SkinnedMeshRenderer>();
-        _skinnedMesh = GetComponent<SkinnedMeshRenderer>().sharedMesh;
         _skinnedMeshRenderer.SetBlendShapeWeight(_indexOne, 100);
     }
 
     void Start()
     {
-        _count = EndFrame - StartFrame;
     }
 
     void Update()

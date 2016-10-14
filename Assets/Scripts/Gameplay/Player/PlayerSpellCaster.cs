@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections;
 using UnityEngine.Networking;
 
@@ -22,6 +23,32 @@ public class PlayerSpellCaster : NetworkBehaviour
     void Start()
     {
         _state = GetComponent<PlayerState>();
+
+        if (SpellsPanel.Instance != null)
+        {
+            SpellsPanel.Instance.RegisterSpell(Spell1);
+            SpellsPanel.Instance.RegisterSpell(Spell2);
+            SpellsPanel.Instance.RegisterSpell(Spell3);
+        }
+        else
+        {
+            Debug.LogWarning("Can't register spells UI because SpellsPanel is null");
+        }
+    }
+
+    void Update()
+    {
+        if (isLocalPlayer && SpellsPanel.Instance != null)
+        {
+            var cd1 = _time1 - Time.time;
+            SpellsPanel.Instance.UpdateCooldown(Spell1, cd1 > 0 ? cd1 : 0);
+
+            var cd2 = _time2 - Time.time;
+            SpellsPanel.Instance.UpdateCooldown(Spell2, cd2 > 0 ? cd2 : 0);
+
+            var cd3 = _time3 - Time.time;
+            SpellsPanel.Instance.UpdateCooldown(Spell3, cd3 > 0 ? cd3 : 0);
+        }
     }
 
     [Command]
@@ -31,11 +58,11 @@ public class PlayerSpellCaster : NetworkBehaviour
             return;
 
         if(_state.CanCast)
-            RpcCast(spellId);
+            RpcCast(spellId, transform.position, transform.TransformDirection(Vector3.forward));
     }
 
     [ClientRpc]
-    void RpcCast(int spellId)
+    void RpcCast(int spellId, Vector3 position, Vector3 direction)
     {
         if(!_state.CanCast)
             return;
@@ -43,23 +70,23 @@ public class PlayerSpellCaster : NetworkBehaviour
         if (spellId == 1 && Time.time > _time1)
         {
             _time1 = Time.time + Spell1.CoolDown;
-            Cast(Spell1);
+            Cast(Spell1, position, direction);
         }
 
         if (spellId == 2 && Time.time > _time2)
         {
             _time2 = Time.time + Spell2.CoolDown;
-            Cast(Spell2);
+            Cast(Spell2, position, direction);
         }
 
         if (spellId == 3 && Time.time > _time3)
         {
             _time3 = Time.time + Spell3.CoolDown;
-            Cast(Spell3);
+            Cast(Spell3, position, direction);
         }
     }
 
-    void Cast(SpellData spell)
+    void Cast(SpellData spell, Vector3 position, Vector3 direction)
     {
         if (spell == null || spell.Prefab == null)
         {
@@ -67,8 +94,8 @@ public class PlayerSpellCaster : NetworkBehaviour
             return;
         }
 
-        var direction = transform.TransformDirection(Vector3.forward);
-        var spellInstance = GameObject.Instantiate(spell.Prefab, transform.position + direction * StartRadius + Offset, Quaternion.identity) as GameObject;
+        //var direction = transform.TransformDirection(Vector3.forward);
+        var spellInstance = GameObject.Instantiate(spell.Prefab, position + direction * StartRadius + Offset, Quaternion.identity) as GameObject;
 
         if (spell.IsProjectile)
         {
@@ -84,5 +111,10 @@ public class PlayerSpellCaster : NetworkBehaviour
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position + Offset, StartRadius);
+    }
+
+    public void SpellEvent(Vector3 transform)
+    {
+        
     }
 }

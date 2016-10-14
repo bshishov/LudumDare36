@@ -10,15 +10,10 @@ public class Hammers : MonoBehaviour
     public AudioClip ChargeClip;
 
     private AudioSource _audioSource;
-    private Animator _animator;
 
     void Start ()
     {
         _audioSource = GetComponent<AudioSource>();
-        _animator = GetComponent<Animator>();
-        var networkAnimator = GetComponent<NetworkAnimator>();
-
-        //na.SetParameterAutoSend();
     }
 	
 	void Update ()
@@ -36,7 +31,6 @@ public class Hammers : MonoBehaviour
     void StartChargeSound()
     {
         _audioSource.clip = ChargeClip;
-        //_audioSource.loop = true;
         _audioSource.Play();
     }
 
