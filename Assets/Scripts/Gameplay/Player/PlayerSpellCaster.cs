@@ -24,15 +24,18 @@ public class PlayerSpellCaster : NetworkBehaviour
     {
         _state = GetComponent<PlayerState>();
 
-        if (SpellsPanel.Instance != null)
+        if (isLocalPlayer)
         {
-            SpellsPanel.Instance.RegisterSpell(Spell1);
-            SpellsPanel.Instance.RegisterSpell(Spell2);
-            SpellsPanel.Instance.RegisterSpell(Spell3);
-        }
-        else
-        {
-            Debug.LogWarning("Can't register spells UI because SpellsPanel is null");
+            if (SpellsPanel.Instance != null)
+            {
+                SpellsPanel.Instance.RegisterSpell(Spell1);
+                SpellsPanel.Instance.RegisterSpell(Spell2);
+                SpellsPanel.Instance.RegisterSpell(Spell3);
+            }
+            else
+            {
+                Debug.LogWarning("Can't register spells UI because SpellsPanel is null");
+            }
         }
     }
 
