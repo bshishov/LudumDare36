@@ -1,9 +1,8 @@
 ﻿using System;
-using Assets.Scripts.Gameplay;
-using Assets.Scripts.Gameplay.Player;
+using Assets.Scripts.Data;
 using UnityEngine;
 
-namespace Assets.Scripts.Data
+namespace Assets.Scripts.Gameplay.Spells
 {
     [Serializable]
     [CreateAssetMenu(fileName = "Spells/Projectile")]

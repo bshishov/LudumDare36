@@ -1,8 +1,8 @@
 using System;
-using Assets.Scripts.Gameplay.Player;
+using Assets.Scripts.Data;
 using UnityEngine;
 
-namespace Assets.Scripts.Data
+namespace Assets.Scripts.Gameplay.Spells
 {
     [Serializable]
     [CreateAssetMenu(fileName = "Spells/Punch")]
@@ -14,6 +14,7 @@ namespace Assets.Scripts.Data
         public AudioClip PunchAudio;
         public Vector3 PunchForce = new Vector3(0, 10, 25);
         public float MaxPunchRadius = 0.5f;
+        public BuffData BuffAfter;
     
         public override void Cast(Vector3 position, Vector3 direction)
         {
@@ -30,7 +31,13 @@ namespace Assets.Scripts.Data
                 {
                     if (hit.collider != null && hit.collider.gameObject.CompareTag(Tags.Player))
                     {
-                        hit.collider.gameObject.GetComponent<PlayerMovement>().CmdPushPlayer(Caster.transform.TransformVector(PunchForce));
+                        var target = hit.collider.gameObject;
+
+                        target.GetComponent<PlayerMovement>().CmdPushPlayer(Caster.transform.TransformVector(PunchForce));
+
+                        if (BuffAfter != null)
+                            target.GetComponent<PlayerState>().CmdApplyBuff(BuffAfter.name);
+                        
                         RaiseEvent(PunchHitSuccess);
                     }
                     else
@@ -50,7 +57,7 @@ namespace Assets.Scripts.Data
             if (spellEvent == PunchHitSuccess)
             {
                 Debug.Log("Punch hit success");
-                Caster.GetComponent<AudioSource>().PlayOneShot(PunchAudio);
+                Caster.GetComponent<AudioSource>().PlayOneShot(PunchAudio, 0.8f);
                 this.Destroy();
             }
 
