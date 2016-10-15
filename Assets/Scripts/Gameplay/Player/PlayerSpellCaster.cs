@@ -1,123 +1,204 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Assets.Scripts.Data;
+using Assets.Scripts.UI;+
 using UnityEngine;
-using System.Collections;
 using UnityEngine.Networking;
 
-[RequireComponent(typeof(PlayerState))]
-public class PlayerSpellCaster : NetworkBehaviour
+namespace Assets.Scripts.Gameplay.Player
 {
-    public SpellData Spell1;
-    public SpellData Spell2;
-    public SpellData Spell3;
+    [RequireComponent(typeof(PlayerState))]
+    public class PlayerSpellCaster : NetworkBehaviour
+    {
+        class SpellState
+        {
+            public readonly SpellData Spell;
+
+            private float _timeAvailableToCast;
+            private readonly Dictionary<int, SpellHandler> _handlers 
+                = new Dictionary<int, SpellHandler>();
+            private int _serverCastId = 0;
+            private readonly Dictionary<int, int> _queuedEvents = new Dictionary<int, int>(); 
+
+            public bool CanCast
+            {
+                get { return Time.time > _timeAvailableToCast; }
+            }
+
+            public float CurrentCooldown
+            {
+                get
+                {
+                    var cd = _timeAvailableToCast - Time.time;
+                    return cd > 0 ? cd : 0;
+                }
+            }
+
+            public SpellState(SpellData spell)
+            {
+                Spell = spell;
+            }
+
+            public int CastServer(PlayerSpellCaster caster, Vector3 position, Vector3 direction)
+            {
+                _timeAvailableToCast = Time.time + Spell.CoolDown;
+
+                var handler = (SpellHandler)SpellHandler.Instantiate(Spell.Handler);
+                handler.Id = _serverCastId++;
+                handler.Spell = Spell;
+                handler.Caster = caster;
+
+                _handlers.Add(handler.Id, handler);
+
+                Debug.Log(string.Format("Server casting spell:{0} id:{1}", Spell.name, handler.Id));
+                handler.Cast(position, direction);
+
+                return handler.Id;
+            }
+
+            public void CastClient(int spellHandlerId, PlayerSpellCaster caster, Vector3 position, Vector3 direction)
+            {
+                //_serverCastId = spellHandlerId;
+                _timeAvailableToCast = Time.time + Spell.CoolDown - Network.GetAveragePing(Network.player) / 1000f;
+
+                var handler = (SpellHandler) SpellHandler.Instantiate(Spell.Handler);
+                handler.Id = spellHandlerId;
+                handler.Spell = Spell;
+                handler.Caster = caster;
+
+                _handlers.Add(handler.Id, handler);
+
+                Debug.Log(string.Format("Client casting spell:{0} id:{1}", Spell.name, spellHandlerId));
+                handler.Cast(position, direction);
+
+                // process queued events
+                if (_queuedEvents.ContainsKey(spellHandlerId))
+                {
+                    handler.OnSpellEvent(_queuedEvents[spellHandlerId]);
+                    _queuedEvents.Remove(spellHandlerId);
+                }
+            }
+
+            public void SendEvent(int spellHandlerId, int eventId)
+            {
+                SpellHandler handler;
+
+                if (_handlers.TryGetValue(spellHandlerId, out handler))
+                {
+                    handler.OnSpellEvent(eventId);
+                }
+                else
+                {
+                    Debug.LogFormat("Queued event id:{0} for handler:{1}", eventId, spellHandlerId);
+                    _queuedEvents.Add(spellHandlerId, eventId);
+                }
+            }
+
+            public void DestroyHandler(int spellHandlerId)
+            {
+                SpellHandler handler;
+
+                if (_handlers.TryGetValue(spellHandlerId, out handler))
+                {
+                    _handlers.Remove(spellHandlerId);
+                    handler.OnDestroy();
+                }
+                else
+                {
+                    Debug.LogWarningFormat("Tried to destroy handler but there is no handler with id:{0}", spellHandlerId);
+                }
+            }
+        }
+
+        public List<SpellData> Spells;
     
-    public Vector3 Force = new Vector3(0, 0.1f, 1f);
-    public Vector3 Offset = new Vector3();
-    public float StartRadius = 0.3f;
+        public Vector3 Offset = new Vector3();
+        public float StartRadius = 0.3f;
 
-    private PlayerState _state;
+        private PlayerState _state;
+        private readonly List<SpellState> _spellStates = new List<SpellState>();
 
-    private float _time1;
-    private float _time2;
-    private float _time3;
-
-    void Start()
-    {
-        _state = GetComponent<PlayerState>();
-
-        if (isLocalPlayer)
+        void Start()
         {
-            if (SpellsPanel.Instance != null)
+            _state = GetComponent<PlayerState>();
+            _spellStates.AddRange(Spells.Select(s => new SpellState(s)));
+
+            if (isLocalPlayer && SpellsPanel.Instance != null)
             {
-                SpellsPanel.Instance.RegisterSpell(Spell1);
-                SpellsPanel.Instance.RegisterSpell(Spell2);
-                SpellsPanel.Instance.RegisterSpell(Spell3);
-            }
-            else
-            {
-                Debug.LogWarning("Can't register spells UI because SpellsPanel is null");
+                foreach (var spellData in Spells)
+                {
+                    SpellsPanel.Instance.RegisterSpell(spellData);
+                }
             }
         }
-    }
 
-    void Update()
-    {
-        if (isLocalPlayer && SpellsPanel.Instance != null)
+        void Update()
         {
-            var cd1 = _time1 - Time.time;
-            SpellsPanel.Instance.UpdateCooldown(Spell1, cd1 > 0 ? cd1 : 0);
-
-            var cd2 = _time2 - Time.time;
-            SpellsPanel.Instance.UpdateCooldown(Spell2, cd2 > 0 ? cd2 : 0);
-
-            var cd3 = _time3 - Time.time;
-            SpellsPanel.Instance.UpdateCooldown(Spell3, cd3 > 0 ? cd3 : 0);
-        }
-    }
-
-    [Command]
-    public void CmdCast(int spellId)
-    {
-        if(!isServer)
-            return;
-
-        if(_state.CanCast)
-            RpcCast(spellId, transform.position, transform.TransformDirection(Vector3.forward));
-    }
-
-    [ClientRpc]
-    void RpcCast(int spellId, Vector3 position, Vector3 direction)
-    {
-        if(!_state.CanCast)
-            return;
-
-        if (spellId == 1 && Time.time > _time1)
-        {
-            _time1 = Time.time + Spell1.CoolDown;
-            Cast(Spell1, position, direction);
-        }
-
-        if (spellId == 2 && Time.time > _time2)
-        {
-            _time2 = Time.time + Spell2.CoolDown;
-            Cast(Spell2, position, direction);
-        }
-
-        if (spellId == 3 && Time.time > _time3)
-        {
-            _time3 = Time.time + Spell3.CoolDown;
-            Cast(Spell3, position, direction);
-        }
-    }
-
-    void Cast(SpellData spell, Vector3 position, Vector3 direction)
-    {
-        if (spell == null || spell.Prefab == null)
-        {
-            Debug.LogWarning("Spell prefab is empty");
-            return;
-        }
-
-        //var direction = transform.TransformDirection(Vector3.forward);
-        var spellInstance = GameObject.Instantiate(spell.Prefab, position + direction * StartRadius + Offset, Quaternion.identity) as GameObject;
-
-        if (spell.IsProjectile)
-        {
-            var rigidBody = spellInstance.GetComponent<Rigidbody>();
-            if (rigidBody != null)
+            if (isLocalPlayer && SpellsPanel.Instance != null)
             {
-                rigidBody.AddForce(transform.TransformVector(Force), ForceMode.Impulse);
+                foreach (var spellState in _spellStates)
+                {
+                    SpellsPanel.Instance.UpdateCooldown(spellState.Spell, spellState.CurrentCooldown);
+                }
             }
         }
-    }
 
-    void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position + Offset, StartRadius);
-    }
+        [Command]
+        public void CmdCast(int spellSlotId)
+        {
+            if(!isServer)
+                return;
 
-    public void SpellEvent(Vector3 transform)
-    {
-        
+            if (_state.CanCast && spellSlotId >= 0 && spellSlotId < _spellStates.Count)
+            {
+                var spellState = _spellStates[spellSlotId];
+                if (spellState.CanCast)
+                {
+                    var spellHandlerId = spellState.CastServer(this, transform.position,
+                        transform.TransformDirection(Vector3.forward));
+                    RpcCast(spellSlotId, spellHandlerId, transform.position, transform.TransformDirection(Vector3.forward));
+                }
+            }
+        }
+
+        [ClientRpc]
+        void RpcCast(int spellSlotId, int spellHandlerId, Vector3 position, Vector3 direction)
+        {
+            // Because this cast is already on server
+            if (!isServer)
+            {
+                var spellState = _spellStates[spellSlotId];
+                spellState.CastClient(spellHandlerId, this, position, direction);
+            }
+        }
+
+        void OnDrawGizmosSelected()
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(transform.position + Offset, StartRadius);
+        }
+
+        [Server]
+        public void SendSpellEvent(SpellHandler handler, int eventId)
+        {
+            var spellSlotId = Spells.IndexOf(handler.Spell);
+            Debug.LogFormat("Sending spell event handler.Spell.name:{0} eventId:{1} spellSlotId:{2}", handler.Spell.name, eventId, spellSlotId);
+            RpcSpellEvent(spellSlotId, handler.Id, eventId);
+        }
+
+        [ClientRpc]
+        void RpcSpellEvent(int spellSlotId, int handlerId, int eventId)
+        {
+            Debug.LogFormat("Received spell event handlerId:{0} eventId:{1} spellSlotId:{2}", handlerId, eventId, spellSlotId);
+            var spell = _spellStates[spellSlotId];
+            spell.SendEvent(handlerId, eventId);
+        }
+
+        public void DestroySpellHandler(SpellHandler spellHandler)
+        {
+            var spellState = _spellStates.FirstOrDefault(state => state.Spell == spellHandler.Spell);
+            spellState.DestroyHandler(spellHandler.Id);
+        }
     }
 }

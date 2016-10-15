@@ -30,17 +30,8 @@ public class PathMover : NetworkBehaviour
     public float Speed = 1f;
     public PathMoverType MovementType;
 
-    // STATE
-#if UNITY_EDITOR
-    [SerializeField]
-    [ShowOnly]
-#endif
+  
     private int _step = 0;
-
-#if UNITY_EDITOR
-    [SerializeField]
-    [ShowOnly]
-#endif
     private float _stepState = 0f;
 
     private Waypoint _initial;

@@ -19,9 +19,6 @@ public class ActivatorProxy : NetworkBehaviour
     public float TimeBeforeActivationMessage;
     public float TimeBeforeDeactivationMessage;
 
-#if UNITY_EDITOR
-    [SerializeField][ShowOnly]
-#endif
     private int _counter = 0;
     private float _deactivatingTime;
     private bool _deactivationPending;
