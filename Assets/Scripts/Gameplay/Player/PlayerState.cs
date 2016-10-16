@@ -30,19 +30,18 @@ public class PlayerState : NetworkBehaviour
                 var effect = GameObject.Instantiate(Data.EffectPrefab, state.transform, false) as GameObject;
                 Destroy(effect, Data.Duration);
             }
+        }
 
+        public void OnAffect(PlayerState state)
+        {
             state._canRotate = Data.CanRotate;
-            state._canWalk= Data.CanWalk;
+            state._canWalk = Data.CanWalk;
             state._canCast = Data.CanCast;
             state.MovementInversed = Data.InverseMovement;
         }
    
         public void OnDisable(PlayerState state)
         {
-            state._canRotate = true;
-            state._canWalk = true;
-            state._canCast = true;
-            state.MovementInversed = false;
         }
 
         public void Refresh()
@@ -87,20 +86,26 @@ public class PlayerState : NetworkBehaviour
 
 	void FixedUpdate ()
 	{
-	    if (isLocalPlayer)
+        if (isLocalPlayer)
 	    {
 	        if (_respawnRequested && Time.time > _respawnTime)
 	            CmdRespawn();
 	    }
 
-	    foreach (var buff in _buffs)
+        // Proceed buffs
+        var buffsNeedToBeUpdated = false;
+        foreach (var buff in _buffs)
 	    {
 	        if (Time.time > buff.EndTime)
 	        {
 	            buff.OnDisable(this);
+                buffsNeedToBeUpdated = true;
 	        }
 	    }
 	    _buffs.RemoveAll(buff => Time.time > buff.EndTime);
+
+        if(buffsNeedToBeUpdated)
+            BuffsUpdated();
 	}
 
     [Command]
@@ -110,6 +115,22 @@ public class PlayerState : NetworkBehaviour
             return;
         
         RpcApplyBuff(buffname);
+    }
+
+    void BuffsUpdated()
+    {
+        // Reset state
+        _canWalk = true;
+        _canRotate = true;
+        _canCast = true;
+        MovementInversed = false;
+        SpeedModifier = 1.0f;
+
+        // Re-apply buffs
+        foreach (var buffInstance in _buffs)
+        {
+            buffInstance.OnAffect(this);
+        }
     }
 
     [ClientRpc]
@@ -129,6 +150,7 @@ public class PlayerState : NetworkBehaviour
             var inst = new BuffInstance(buff);
             inst.OnEnable(this);
             _buffs.Add(inst);
+            BuffsUpdated();
         }
     }
 
