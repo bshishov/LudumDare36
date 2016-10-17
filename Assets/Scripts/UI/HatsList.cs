@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using Assets.Scripts.Gameplay.Player;
 using UnityEngine.UI;
 
 public class HatsList : MonoBehaviour

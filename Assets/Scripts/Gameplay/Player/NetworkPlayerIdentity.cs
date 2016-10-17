@@ -1,83 +1,84 @@
-﻿using System;
-using UnityEngine;
-using System.Collections;
+﻿using UnityEngine;
 using UnityEngine.Networking;
 
-[RequireComponent(typeof(PlayerIdentity))]
-public class NetworkPlayerIdentity : NetworkBehaviour
+namespace Assets.Scripts.Gameplay.Player
 {
-    private PlayerIdentity _identity;
-    [HideInInspector]
-    public PlayerIdentity Identity {  get { return _identity; } }
-
-    [SyncVar] private string _hatNameSync;
-    [SyncVar] private Color _colorSync;
-    [SyncVar] private string _nameSync;
-
-    public override void OnStartLocalPlayer()
+    [RequireComponent(typeof(PlayerIdentity))]
+    public class NetworkPlayerIdentity : NetworkBehaviour
     {
-        if (_identity == null)
-            _identity = GetComponent<PlayerIdentity>();
+        private PlayerIdentity _identity;
+        [HideInInspector]
+        public PlayerIdentity Identity {  get { return _identity; } }
 
-        // load identity from player prefs
-        _identity.SetFromPlayerPrefs();
+        [SyncVar] private string _hatNameSync;
+        [SyncVar] private Color _colorSync;
+        [SyncVar] private string _nameSync;
 
-        // local authority must set its syncvars
-        if (!isServer && hasAuthority)
+        public override void OnStartLocalPlayer()
         {
-            _colorSync = _identity.Color;
-            _hatNameSync = _identity.HatName;
-            _nameSync = _identity.Name;
+            if (_identity == null)
+                _identity = GetComponent<PlayerIdentity>();
+
+            // load identity from player prefs
+            _identity.SetFromPlayerPrefs();
+
+            // local authority must set its syncvars
+            if (!isServer && hasAuthority)
+            {
+                _colorSync = _identity.Color;
+                _hatNameSync = _identity.HatName;
+                _nameSync = _identity.Name;
+            }
+
+            // Tell about yourself to everyone
+            CmdSetIdentity(_identity.Name, _identity.Color, _identity.HatName);
         }
 
-        // Tell about yourself to everyone
-        CmdSetIdentity(_identity.Name, _identity.Color, _identity.HatName);
-    }
-
-    void Start()
-    {
-        if (_identity == null)
-            _identity = GetComponent<PlayerIdentity>();
-
-        // if it is not a lovalplayer than set identity from SyncVars
-        if (!isLocalPlayer)
+        void Start()
         {
-            _identity.SetColor(_colorSync);
-            _identity.SetName(_nameSync);
-            _identity.SetHat(_hatNameSync);
-        }
+            if (_identity == null)
+                _identity = GetComponent<PlayerIdentity>();
 
-        PlayersList.Players.Add(this);
-    }
+            // if it is not a lovalplayer than set identity from SyncVars
+            if (!isLocalPlayer)
+            {
+                _identity.SetColor(_colorSync);
+                _identity.SetName(_nameSync);
+                _identity.SetHat(_hatNameSync);
+            }
+
+            PlayersList.Players.Add(this);
+        }
 
     
-    [Command]
-    void CmdSetIdentity(string playerName, Color color, string hatName)
-    {
-        if (isServer && hasAuthority)
+        [Command]
+        void CmdSetIdentity(string playerName, Color color, string hatName)
         {
-            _colorSync = _identity.Color;
-            _hatNameSync = _identity.HatName;
-            _nameSync = _identity.Name;
+            if (isServer && hasAuthority)
+            {
+                _colorSync = _identity.Color;
+                _hatNameSync = _identity.HatName;
+                _nameSync = _identity.Name;
+            }
+
+            RpcSetIdenitity(playerName, color, hatName);
         }
 
-        RpcSetIdenitity(playerName, color, hatName);
-    }
-
-    [ClientRpc]
-    void RpcSetIdenitity(string playerName, Color color, string hatName)
-    {
-        if (!isLocalPlayer)
+        [ClientRpc]
+        void RpcSetIdenitity(string playerName, Color color, string hatName)
         {
-            _identity.SetName(playerName);
-            _identity.SetHat(hatName);
-            _identity.SetColor(color);
+            if (!isLocalPlayer)
+            {
+                _identity.SetName(playerName);
+                _identity.SetHat(hatName);
+                _identity.SetColor(color);
+            }
         }
-    }
 
-    public void OnDestroy()
-    {
-        if (PlayersList.Players.Contains(this))
-            PlayersList.Players.Remove(this);
+        public void OnDestroy()
+        {
+            if (PlayersList.Players.Contains(this))
+                PlayersList.Players.Remove(this);
+        }
     }
 }

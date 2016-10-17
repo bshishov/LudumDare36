@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: 02cd81ac907133d498b5d2234b808cf6
-timeCreated: 1472385337
+timeCreated: 1476725612
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
@@ -73,10 +73,10 @@ TextureImporter:
       name: emotions_balloon1
       rect:
         serializedVersion: 2
-        x: 40
-        y: 767
-        width: 240
-        height: 240
+        x: 36
+        y: 770
+        width: 252
+        height: 252
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}

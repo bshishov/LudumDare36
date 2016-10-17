@@ -1,40 +1,42 @@
 ﻿using System;
-using UnityEngine;
-using System.Collections;
 using System.Linq;
+using UnityEngine;
 
-[CreateAssetMenu(fileName = "Emotion Data")]
-public class EmotionData : ScriptableObject
+namespace Assets.Scripts.Data
 {
-    [Serializable]
-    public struct Emoticon
+    [CreateAssetMenu(fileName = "Emotion Data")]
+    public class EmotionData : ScriptableObject
     {
-        public EmoticonType Type;
-        public Sprite Sprite;
-    }
+        [Serializable]
+        public struct Emoticon
+        {
+            public EmoticonType Type;
+            public Sprite Sprite;
+        }
 
-    public enum EmoticonType : int
-    {
-        Kappa,
-        Leonidas,
-        WTF,
-        Fuck,
-        Angry,
-        Awkward,
-        Cute,
-        Facepalm,
-        Love,
-        NoComments,
-        Oops,
-        Question,
-        Zzzz
-    }
+        public enum EmoticonType : int
+        {
+            Kappa,
+            Leonidas,
+            WTF,
+            Fuck,
+            Angry,
+            Awkward,
+            Cute,
+            Facepalm,
+            Love,
+            NoComments,
+            Oops,
+            Question,
+            Zzzz
+        }
 
-    [SerializeField]
-    public Emoticon[] Emoticons;
+        [SerializeField]
+        public Emoticon[] Emoticons;
 
-    public Sprite GetEmoticonSprite(EmotionData.EmoticonType emoticon)
-    {
-        return Emoticons.FirstOrDefault(e => e.Type == emoticon).Sprite;
+        public Sprite GetEmoticonSprite(EmotionData.EmoticonType emoticon)
+        {
+            return Emoticons.FirstOrDefault(e => e.Type == emoticon).Sprite;
+        }
     }
 }

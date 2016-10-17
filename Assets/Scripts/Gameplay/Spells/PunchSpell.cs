@@ -32,8 +32,7 @@ namespace Assets.Scripts.Gameplay.Spells
                     if (hit.collider != null && hit.collider.gameObject.CompareTag(Tags.Player))
                     {
                         var target = hit.collider.gameObject;
-
-                        target.GetComponent<PlayerMovement>().CmdPushPlayer(Caster.transform.TransformVector(PunchForce));
+                        target.GetComponent<PlayerMovement>().CmdPushPlayer(Quaternion.FromToRotation(Vector3.forward, direction) * PunchForce);
 
                         if (BuffAfter != null)
                             target.GetComponent<PlayerState>().CmdApplyBuff(BuffAfter.name);
