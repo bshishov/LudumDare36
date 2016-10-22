@@ -39,7 +39,7 @@ namespace Assets.Scripts.Gameplay.Player
             if (_identity == null)
                 _identity = GetComponent<PlayerIdentity>();
 
-            // if it is not a lovalplayer than set identity from SyncVars
+            // if it is not a local player than set identity from SyncVars
             if (!isLocalPlayer)
             {
                 _identity.SetColor(_colorSync);

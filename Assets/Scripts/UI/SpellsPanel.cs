@@ -32,11 +32,12 @@ namespace Assets.Scripts.UI
             if (SpellUIPrefab != null)
             {
                 var ui = GameObject.Instantiate(SpellUIPrefab, transform) as GameObject;
+                var info = ui.GetComponent<SpellShotInfo>();
                 var slot = new SpellSlot()
                 {
-                    CooldownText = ui.transform.FindChild("CooldownText").GetComponent<Text>(),
-                    CooldownImage = ui.transform.FindChild("CooldownImage").GetComponent<Image>(),
-                    Icon = ui.transform.FindChild("Image").GetComponent<Image>(),
+                    CooldownText = info.CoolDownText,
+                    CooldownImage = info.CoolDownImage,
+                    Icon = info.Image,
                     Spell = spell,
                 };
 

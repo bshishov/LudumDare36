@@ -17,13 +17,14 @@ public class PlayersList : MonoBehaviour {
             if (row == null)
             {
                 var newItem = Instantiate(ItemTemplate, gameObject.transform) as GameObject;
-                newItem.transform.FindChild("Name").gameObject.GetComponent<Text>().text = player.Identity.Name;
-                newItem.transform.FindChild("DeathsNumber").GetComponent<Text>().text = 0.ToString();
+                var info = newItem.GetComponent<ScoresItemTemplateInfo>();
+                info.NameText.text = player.Identity.Name;
+                info.DeathsText.text = 0.ToString();
                 newItem.name = player.Identity.Name;
             }
             else
             {
-                row.FindChild("DeathsNumber").GetComponent<Text>().text = player.gameObject.GetComponent<PlayerState>().DeathsCount.ToString();
+                row.GetComponent<ScoresItemTemplateInfo>().DeathsText.text = player.gameObject.GetComponent<PlayerState>().DeathsCount.ToString();
             }
         }
     }

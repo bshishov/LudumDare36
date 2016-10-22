@@ -235,9 +235,10 @@ public class PlayerState : NetworkBehaviour
             var pauseCanvasController = pauseMenuControler.PauseCanvas.GetComponent<PauseMenuButtons>();
             pauseCanvasController.PlayButton.SetActive(false);
             pauseCanvasController.GameOverPanel.SetActive(true);
+            var gameOverData = pauseMenuControler.GetComponent<GameOverMenuInfo>();
 
-            GameObject.Find("Time").GetComponent<Text>().text = string.Format("{0} m {1} s", wholeMinutes, wholeSeconds);
-            GameObject.Find("Deaths").GetComponent<Text>().text = string.Format("{0} times", DeathsCount);
+            gameOverData.TimeText.text = string.Format("{0} m {1} s", wholeMinutes, wholeSeconds);
+            gameOverData.DeathsText.text = string.Format("{0} times", DeathsCount);
         }
     }
 

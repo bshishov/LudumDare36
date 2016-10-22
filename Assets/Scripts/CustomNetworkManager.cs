@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 
+[RequireComponent(typeof(NetworkControllerPopups))]
 public class CustomNetworkManager : NetworkManager
 {
     public enum NetworkingModes
@@ -12,8 +13,15 @@ public class CustomNetworkManager : NetworkManager
 
     public NetworkingModes NetworkingMode = NetworkingModes.None;
 
+    public NetworkControllerPopups PopupsController;
     private GameObject _errorPopup;
     private GameObject _processingPopup;
+
+    public void Start()
+    {
+        _errorPopup = GetComponent<NetworkControllerPopups>().ErrorPopup;
+        _processingPopup = GetComponent<NetworkControllerPopups>().ProcessingPopup;
+    }
 
     public static int DefaultPort = 15678;
 
@@ -24,8 +32,6 @@ public class CustomNetworkManager : NetworkManager
         StopClient();
         NetworkingMode = NetworkingModes.None;
 
-        _errorPopup = GameObject.Find("Menu").GetComponent<NetworkControllerPopups>().ErrorPopup;
-        _processingPopup = GameObject.Find("Menu").GetComponent<NetworkControllerPopups>().ProcessingPopup;
         _errorPopup.SetActive(true);
         _processingPopup.SetActive(false);
     }
@@ -35,9 +41,7 @@ public class CustomNetworkManager : NetworkManager
         Debug.Log("CLIENT DISCONNECTED");
         StopClient();
         NetworkingMode = NetworkingModes.None;
-
-        _errorPopup = GameObject.Find("Menu").GetComponent<NetworkControllerPopups>().ErrorPopup;
-        _processingPopup = GameObject.Find("Menu").GetComponent<NetworkControllerPopups>().ProcessingPopup;
+        
         _errorPopup.SetActive(true);
         _processingPopup.SetActive(false);
     }

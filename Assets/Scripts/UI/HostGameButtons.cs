@@ -22,16 +22,17 @@ public class HostGameButtons : MonoBehaviour {
     public GameObject LevelsItemTemplate;
     public LevelPack[] LevelPacks;
     
-    private CustomNetworkManager _networkManager;
+    public CustomNetworkManager NetworkManager;
+    public Text PortTextBox;
+    public Text MaxPlayersTextBox;
 
     private static uint _defaultMaxPlayers = 20;
     private static uint _maxPlayers = _defaultMaxPlayers;
 
     public void Start()
     {
-        _networkManager = GameObject.Find("NetworkManager").GetComponent<CustomNetworkManager>();
-        _networkManager.networkPort = CustomNetworkManager.DefaultPort;
-        _networkManager.offlineScene = "MainMenu";
+        NetworkManager.networkPort = CustomNetworkManager.DefaultPort;
+        NetworkManager.offlineScene = "MainMenu";
 
         var dropDown = LevelPacksDropDown.GetComponent<Dropdown>();
         var options = new List<Dropdown.OptionData>();
@@ -75,9 +76,9 @@ public class HostGameButtons : MonoBehaviour {
 
     public void OnHost()
     {
-        _networkManager.networkAddress = "localhost";
-        SetPortToNetworkManager(GameObject.Find("ServerPort/Text"));
-        SetMatchSizeToNetworkManager(GameObject.Find("MaximumPlayers/Text"));
+        NetworkManager.networkAddress = "localhost";
+        SetPortToNetworkManager(PortTextBox);
+        SetMatchSizeToNetworkManager(MaxPlayersTextBox);
 
         var activeToggle = LevelsGridToggle.ActiveToggles().First();
         if (activeToggle == null)
@@ -88,13 +89,13 @@ public class HostGameButtons : MonoBehaviour {
             Debug.LogErrorFormat("No such level for dropdown value = {0}", selectedName);
             return;
         }
-        _networkManager.matchSize = _maxPlayers;
+        NetworkManager.matchSize = _maxPlayers;
 
-        _networkManager.onlineScene = selectedName;
-        _networkManager.NetworkingMode = CustomNetworkManager.NetworkingModes.Host;
-        _networkManager.StartHost();
+        NetworkManager.onlineScene = selectedName;
+        NetworkManager.NetworkingMode = CustomNetworkManager.NetworkingModes.Host;
+        NetworkManager.StartHost();
 
-        PlayerPrefs.SetInt("connection_port", _networkManager.networkPort);
+        PlayerPrefs.SetInt("connection_port", NetworkManager.networkPort);
     }
 
     public void OnChangeMaxPlayers(string newValue)
@@ -113,8 +114,9 @@ public class HostGameButtons : MonoBehaviour {
         foreach (var level in LevelPacks[index].Levels)
         {
             var newItem = Instantiate(LevelsItemTemplate, LevelsGrid.transform) as GameObject;
-            newItem.transform.FindChild("Image").GetComponentInChildren<Image>().sprite = level.Thumbnail;
-            newItem.transform.FindChild("Text").GetComponentInChildren<Text>().text = level.Name;
+            var info = newItem.GetComponentInChildren<LevelItemTemplateInfo>();
+            info.Image.sprite = level.Thumbnail;
+            info.Text.text = level.Name;
             newItem.name = level.SceneName;
             newItem.transform.localScale = Vector3.one;
 
@@ -126,24 +128,24 @@ public class HostGameButtons : MonoBehaviour {
         var rowsNumber = Math.Floor(LevelPacks[index].Levels.Length / 5f) + 1;
         var rect = LevelsGrid.GetComponent<RectTransform>().rect;
         rect.size = new Vector2(rect.size.x, (float)rowsNumber * cellHeightLevelsGrid);
-        // TODO: size is not changing
+        // TODO: size is not changing ?
     }
 
-    public void SetPortToNetworkManager(GameObject target)
+    public void SetPortToNetworkManager(Text target)
     {
-        var portText = target.GetComponent<Text>().text;
+        var portText = target.text;
         if (portText == "")
-            _networkManager.networkPort = CustomNetworkManager.DefaultPort;
+            NetworkManager.networkPort = CustomNetworkManager.DefaultPort;
         else
-            _networkManager.networkPort = Convert.ToInt32(portText);
+            NetworkManager.networkPort = Convert.ToInt32(portText);
     }
 
-    public void SetMatchSizeToNetworkManager(GameObject target)
+    public void SetMatchSizeToNetworkManager(Text target)
     {
-        var matchSize = target.GetComponent<Text>().text;
+        var matchSize = target.text;
         if (matchSize == "")
-            _networkManager.matchSize = _defaultMaxPlayers;
+            NetworkManager.matchSize = _defaultMaxPlayers;
         else
-            _networkManager.matchSize = Convert.ToUInt32(matchSize);
+            NetworkManager.matchSize = Convert.ToUInt32(matchSize);
     }
 }
