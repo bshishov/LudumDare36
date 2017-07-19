@@ -13,7 +13,7 @@ public class PlayersList : MonoBehaviour {
     {
         foreach (var player in Players)
         {
-            var row = gameObject.transform.FindChild(player.Identity.Name);
+            var row = gameObject.transform.Find(player.Identity.Name);
             if (row == null)
             {
                 var newItem = Instantiate(ItemTemplate, gameObject.transform) as GameObject;

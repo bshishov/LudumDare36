@@ -33,7 +33,7 @@ namespace Assets.Scripts.Gameplay.Player
             if (string.IsNullOrEmpty(HeadObjectName))
                 _headTransform = gameObject.transform;
             else
-                _headTransform = gameObject.transform.FindChild(HeadObjectName);
+                _headTransform = gameObject.transform.Find(HeadObjectName);
 
             if (gameObject.name == "Dummy")
             {
@@ -54,7 +54,7 @@ namespace Assets.Scripts.Gameplay.Player
 
                 HatName = hatName;
 
-                _headTransform = gameObject.transform.FindChild(HeadObjectName);
+                _headTransform = gameObject.transform.Find(HeadObjectName);
 
                 if(_hatObject != null)
                     Destroy(_hatObject);
