@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
-using UnityEditor;
+
 using UnityEngine;
 using UnityEngine.Networking;
 #if UNITY_EDITOR
-
+using UnityEditor;
 #endif
 
 namespace Assets.Scripts.Gameplay
