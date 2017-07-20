@@ -1,5 +1,6 @@
 ﻿using System;
 using Assets.Scripts.Gameplay.Player;
+using Assets.Scripts.Utility;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
@@ -223,18 +224,4 @@ public class PlayerMovement : NetworkBehaviour
             }
         }
     }
-
-#if DEBUG
-    void OnGUI()
-    {
-        if (isLocalPlayer)
-        {
-            var inputVector =
-                Vector3.ClampMagnitude(new Vector3(Input.GetAxis("Horizontal"), 0f, Input.GetAxis("Vertical")), 1f);
-            GUI.TextField(new Rect(0, 0, 200, 20), string.Format("input: {0}", inputVector.ToString()));
-            GUI.TextField(new Rect(0, 25, 200, 20), string.Format("velocity: {0}", _rigidBody.velocity.ToString()));
-            GUI.TextField(new Rect(0, 50, 200, 20), string.Format("velocity: {0}", _rigidBody.velocity.magnitude));
-        }
-    }
-#endif
 }

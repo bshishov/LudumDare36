@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using Assets.Scripts.Data;
+using Assets.Scripts.UI;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -27,12 +28,12 @@ namespace Assets.Scripts.Gameplay.Player
                     _playerNameText.text = name;
             };
 
-            var container = GameObject.Find("GameCanvas");
-            if (container != null)
+            var canvas = GameObject.FindObjectOfType<Canvas>();
+            if (canvas != null)
             {
                 if (PlayerUIPrefab != null)
                 {
-                    _uiObject = GameObject.Instantiate(PlayerUIPrefab, container.transform) as GameObject;
+                    _uiObject = (GameObject)Instantiate(PlayerUIPrefab, canvas.transform);
                     _playerNameText = _uiObject.GetComponentInChildren<Text>();
                     _playerNameText.text = _identity.Name;
                 }

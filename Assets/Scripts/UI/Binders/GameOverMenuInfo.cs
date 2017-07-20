@@ -1,10 +1,11 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEngine.UI;
 
-public class GameOverMenuInfo : MonoBehaviour {
-
-    public Text TimeText;
-    public Text DeathsText;
-
+namespace Assets.Scripts.UI.Binders
+{
+    public class GameOverMenuInfo : MonoBehaviour
+    {
+        public Text TimeText;
+        public Text DeathsText;
+    }
 }

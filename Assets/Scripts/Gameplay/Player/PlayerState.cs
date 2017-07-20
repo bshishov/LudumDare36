@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Assets.Scripts.UI;
+using Assets.Scripts.Utility;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 namespace Assets.Scripts.Gameplay.Player
 {
@@ -192,6 +194,12 @@ namespace Assets.Scripts.Gameplay.Player
             // disable all children objects
             for (var i = 0; i < gameObject.transform.childCount; i++)
                 gameObject.transform.GetChild(i).gameObject.SetActive(false);
+
+            if (isLocalPlayer)
+            {
+                var cameraMovement = FindObjectOfType<CameraMovement>();
+                cameraMovement.SetTarget(null);
+            }
         
         }
 
@@ -201,6 +209,8 @@ namespace Assets.Scripts.Gameplay.Player
             if (isLocalPlayer)
             {
                 GetComponent<PlayerMovement>().CmdTeleportToSpawn();
+                var cameraMovement = FindObjectOfType<CameraMovement>();
+                cameraMovement.SetTarget(gameObject);
             }
         }
 
@@ -225,14 +235,14 @@ namespace Assets.Scripts.Gameplay.Player
             if (isLocalPlayer)
             {
                 var timeDelta = (int) Math.Round(Time.time - StartTime);
-                var wholeMinutes = timeDelta/60;
-                var wholeSeconds = timeDelta%60;
+                var totalMinutes = timeDelta / 60;
+                var totalSeconds = timeDelta % 60;
 
                 var uiManager = GameObject.FindObjectOfType<GameplayUIManager>();
                 if (uiManager != null)
                 {
                     uiManager.ShowPanel(GameplayUIManager.UIPanel.GameOver);
-
+                    //uiManager.transform.Find("GameOverPanel/GameOverPanel/TimeLabel/Time").GetComponent<Text>()
                     //gameOverData.TimeText.text = string.Format("{0} m {1} s", wholeMinutes, wholeSeconds);
                     //gameOverData.DeathsText.text = string.Format("{0} times", DeathsCount);
                 }

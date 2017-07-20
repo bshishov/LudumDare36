@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
+using Assets.Scripts.Utility;
 using UnityEngine;
 
 namespace Assets.Scripts.UI
 {
-    public class GameplayUIManager : MonoBehaviour
+    public class GameplayUIManager : Singleton<GameplayUIManager>
     {
         public enum UIPanel
         {
