@@ -29,8 +29,8 @@ namespace Assets.Scripts.UI
             if (_networkManager.networkAddress == "")
                 _networkManager.networkAddress = "localhost";
             SetPortToNetworkManager(PortTextBox);
-            _networkManager.StartClient();
             _networkManager.NetworkingMode = CustomNetworkManager.NetworkingModes.Client;
+            _networkManager.StartClient();
 
             PlayerPrefs.SetString("connection_address", _networkManager.networkAddress);
             PlayerPrefs.SetInt("connection_port", _networkManager.networkPort);

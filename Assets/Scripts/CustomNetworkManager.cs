@@ -37,8 +37,11 @@ namespace Assets.Scripts
             StopClient();
             NetworkingMode = NetworkingModes.None;
 
-            MenuUIManager.Instance.ErrorPopup.SetActive(true);
-            MenuUIManager.Instance.ProcessingPopup.SetActive(false);
+            if (MenuUIManager.Instance != null)
+            {
+                MenuUIManager.Instance.ErrorPopup.SetActive(true);
+                MenuUIManager.Instance.ProcessingPopup.SetActive(false);
+            }
         }
 
         /*
