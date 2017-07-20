@@ -1,5 +1,6 @@
 ﻿using System;
 using Assets.Scripts.Data;
+using Assets.Scripts.Gameplay.Player;
 using UnityEngine;
 
 namespace Assets.Scripts.Gameplay

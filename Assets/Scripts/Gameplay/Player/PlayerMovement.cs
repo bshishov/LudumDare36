@@ -1,4 +1,5 @@
 ﻿using System;
+using Assets.Scripts.Gameplay.Player;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;

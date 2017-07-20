@@ -1,28 +1,29 @@
 ﻿using UnityEngine;
 
-public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
+namespace Assets.Scripts.Utility
 {
-    protected static T _instance;
-
-    /**
-       Returns the instance of this singleton.
-    */
-    public static T Instance
+    public class Singleton<T> : MonoBehaviour where T : MonoBehaviour
     {
-        get
-        {
-            if (_instance == null)
-            {
-                _instance = (T)FindObjectOfType(typeof(T));
+        protected static T _instance;
 
+        /* Returns the instance of this singleton. */
+        public static T Instance
+        {
+            get
+            {
                 if (_instance == null)
                 {
-                    Debug.LogError("An instance of " + typeof(T) +
-                       " is needed in the scene, but there is none.");
-                }
-            }
+                    _instance = (T)FindObjectOfType(typeof(T));
 
-            return _instance;
+                    if (_instance == null)
+                    {
+                        Debug.LogError("An instance of " + typeof(T) +
+                                       " is needed in the scene, but there is none.");
+                    }
+                }
+
+                return _instance;
+            }
         }
     }
 }
